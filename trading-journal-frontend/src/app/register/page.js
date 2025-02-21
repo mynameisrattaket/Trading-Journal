@@ -2,6 +2,94 @@
 
 import { useState } from "react";
 import axios from "axios";
+import Link from "next/link";
+import styled from "styled-components";
+
+const Wrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #4FD1C5, #667EEA); /* Smooth gradient background */
+`;
+
+const Form = styled.form`
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+  
+  &:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const Title = styled.h2`
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #2D3748;
+  margin-bottom: 24px;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #4A5568;
+  background: #F7FAFC;
+  transition: all 0.3s;
+  
+  &:focus {
+    border-color: #667EEA;
+    outline: none;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+  }
+`;
+
+const Button = styled.button`
+  width: 100%;
+  padding: 16px;
+  background-color: #667EEA;
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s ease-in-out;
+  
+  &:hover {
+    background-color: #5A67D8;
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(1);
+  }
+`;
+
+const RegisterLink = styled.p`
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #2D3748;
+`;
+
+const StyledLink = styled(Link)`
+  color: #667EEA;
+  font-weight: 500;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
 
 export default function Register() {
   const [formData, setFormData] = useState({ username: "", email: "", password: "" });
@@ -27,92 +115,56 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-      <form
-        className="p-8 bg-white shadow-lg rounded-lg max-w-md w-full space-y-6"
-        onSubmit={handleSubmit}
-      >
-        <h2 className="text-3xl font-extrabold text-center text-gray-800">Create an Account</h2>
+    <Wrapper>
+      <Form onSubmit={handleSubmit}>
+        <Title>Create an Account</Title>
         
-        {/* Username input */}
-        <div className="relative">
-          <input
-            className="peer border-2 border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-300"
-            type="text"
-            name="username"
-            placeholder=" "
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-          <label
-            htmlFor="username"
-            className="absolute left-3 -top-2.5 text-gray-600 text-sm transition-all duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-0 peer-focus:text-xs peer-focus:text-indigo-600"
-          >
-            Username
-          </label>
-        </div>
-
-        {/* Email input */}
-        <div className="relative">
-          <input
-            className="peer border-2 border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-300"
-            type="email"
-            name="email"
-            placeholder=" "
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <label
-            htmlFor="email"
-            className="absolute left-3 -top-2.5 text-gray-600 text-sm transition-all duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-0 peer-focus:text-xs peer-focus:text-indigo-600"
-          >
-            Email
-          </label>
-        </div>
-
-        {/* Password input */}
-        <div className="relative">
-          <input
-            className="peer border-2 border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-300"
-            type="password"
-            name="password"
-            placeholder=" "
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <label
-            htmlFor="password"
-            className="absolute left-3 -top-2.5 text-gray-600 text-sm transition-all duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-0 peer-focus:text-xs peer-focus:text-indigo-600"
-          >
-            Password
-          </label>
-        </div>
-
+        {/* Username Input */}
+        <Input
+          type="text"
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+          required
+        />
+        
+        {/* Email Input */}
+        <Input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+        
+        {/* Password Input */}
+        <Input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+        
         {/* Error message display */}
         {errorMessage && (
           <div className="text-red-600 text-center">{errorMessage}</div>
         )}
 
-        {/* Submit button */}
-        <button
-          className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 transition-colors duration-300"
-          type="submit"
-          disabled={loading}
-        >
+        {/* Submit Button */}
+        <Button type="submit" disabled={loading}>
           {loading ? "Registering..." : "Register"}
-        </button>
+        </Button>
 
-        {/* Login link */}
-        <div className="text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <a href="/login" className="text-indigo-500 hover:underline">
-            Login here
-          </a>
-        </div>
-      </form>
-    </div>
+        {/* Login Link */}
+        <RegisterLink>
+          Already have an account?{' '}
+          <StyledLink href="/login">Login here</StyledLink>
+        </RegisterLink>
+      </Form>
+    </Wrapper>
   );
 }

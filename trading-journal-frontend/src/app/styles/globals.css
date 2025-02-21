@@ -1,0 +1,151 @@
+/* Tailwind base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ฟอนต์ที่ใช้ */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Poppins:wght@300;400;600&display=swap');
+
+/* ปรับสีพื้นหลัง */
+:root {
+  --background: #f3f4f6; /* Lighter, softer background */
+  --foreground: #2c3e50; /* Darker text for elegance */
+  --primary: #3498db; /* Elegant blue tone for buttons */
+  --secondary: #f39c12; /* Luxurious gold */
+  --accent: #e74c3c; /* Subtle red for accent details */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Poppins', sans-serif; /* Poppins for a more luxurious feel */
+  line-height: 1.8;
+  margin: 0;
+  padding: 0;
+}
+
+/* ปรับให้ปุ่ม Bootstrap ใช้งานได้สะดวก */
+button {
+  background-color: var(--primary);
+  color: white;
+  border-radius: 50px; /* Rounded button edges for a sleek look */
+  border: none;
+  padding: 12px 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  transition: all 0.3s ease; /* Smooth transitions */
+}
+
+button:hover {
+  background-color: var(--secondary); /* Luxurious gold hover */
+  transform: translateY(-2px); /* Slight lift on hover for a refined effect */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Slight increase in shadow */
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary); /* Focus outline for accessibility */
+}
+
+/* การปรับแต่งสไตล์ของปุ่มต่างๆ */
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border-radius: 50px;
+  padding: 12px 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+/* การปรับแต่งลิงก์ */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: var(--secondary);
+  text-decoration: underline;
+}
+
+/* การปรับแต่งคอนเทนเนอร์ */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ใช้โทนสีหรูหรา */
+header {
+  background-color: var(--background);
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for the header */
+}
+
+/* ใช้ border radius และการจัดเรียง */
+.card {
+  background-color: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* เพิ่มการปรับแต่งสำหรับตัวอักษร */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Roboto', sans-serif;
+  color: var(--foreground);
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+p {
+  font-family: 'Poppins', sans-serif;
+  color: var(--foreground);
+  line-height: 1.6;
+}
+
+/* ปรับปุ่มที่เป็นลิงก์ */
+.btn-link {
+  color: var(--primary);
+  text-decoration: none;
+  padding: 10px;
+  font-size: 1rem;
+}
+
+.btn-link:hover {
+  color: var(--secondary);
+  text-decoration: underline;
+}
+
+/* เพิ่มการปรับแต่งความสามารถในการตอบสนองของมือถือ */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .card {
+    padding: 15px;
+  }
+
+  button {
+    padding: 10px 25px;
+  }
+}

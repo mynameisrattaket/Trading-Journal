@@ -1,130 +1,109 @@
-"use client";  // เพิ่มบรรทัดนี้เพื่อระบุว่าไฟล์นี้เป็น Client Component
+"use client";
 
-import { useEffect, useState } from "react";
+import styled from "styled-components";
 import Image from "next/image";
+import Link from 'next/link'; // Import Link component from Next.js
+// Styled components
+const Header = styled.h1`
+  font-size: 3.8rem;
+  font-weight: 700;
+  color: transparent;
+  background: linear-gradient(90deg, #3498db, #f39c12);
+  -webkit-background-clip: text;
+  margin-bottom: 20px;
+`;
+
+const Text = styled.p`
+  font-size: 1.35rem;
+  color: #34495e;
+  margin-bottom: 30px;
+  line-height: 1.8;
+`;
+
+const Card = styled.div`
+  background: #fff;
+  background-image: linear-gradient(to bottom right, #ffffff, #f0f4f8);
+  box-shadow: 0px 12px 30px rgba(0, 0, 0, 0.1);
+  border-radius: 30px;
+  padding: 50px;
+  width: 100%;
+  max-width: 650px;
+  text-align: center;
+  margin: auto;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+const SocialIcon = styled.a`
+  font-size: 2.5rem;
+  color: #34495e;
+  margin: 0 20px;
+  transition: color 0.3s ease, transform 0.3s ease;
+  
+  &:hover {
+    color: #3498db;
+    transform: scale(1.1);
+  }
+`;
+
+const Button = styled.button`
+  background-color: transparent;
+  color: #3498db; /* Elegant blue tone */
+  font-size: 1.2rem;
+  border: 2px solid #3498db; /* Outline border */
+  padding: 12px 40px;
+  border-radius: 50px;
+  margin-top: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  /* Subtle hover effect */
+  &:hover {
+    background-color: #3498db;
+    color: white;
+    transform: translateY(-2px); /* Slight lift */
+  }
+
+  /* Focus effect for accessibility */
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3498db; /* Focus ring */
+  }
+`;
+
 
 export default function Home() {
-  const [message, setMessage] = useState(""); // state สำหรับเก็บข้อความจาก backend
-  const [loading, setLoading] = useState(true); // state สำหรับเช็คการโหลดข้อมูล
-
-  useEffect(() => {
-    // ทำการเรียก API จาก backend
-    fetch("http://localhost:3001")  // แก้ไข URL ให้ตรงกับ API ของ backend
-      .then((response) => response.text())
-      .then((data) => {
-        setMessage(data); // เก็บข้อมูลจาก API
-        setLoading(false); // ปิดสถานะโหลดเมื่อได้ข้อมูลแล้ว
-      })
-      .catch((err) => {
-        console.error("Error fetching data: ", err);
-        setMessage("ไม่สามารถดึงข้อมูลจาก API ได้");
-        setLoading(false); // ปิดสถานะโหลดแม้จะมีข้อผิดพลาด
-      });
-  }, []);
-
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+    <div className="d-flex justify-content-center align-items-center min-vh-100">
+      <Card>
         <Image
-          className="dark:invert"
+          className="mx-auto mb-6"
           src="/next.svg"
           alt="Next.js logo"
           width={180}
           height={38}
-          priority
         />
-        <h1 className="text-2xl text-center text-gray-800 dark:text-white">Welcome to Trading Journal</h1>
-        
-        {loading ? (
-          <p className="text-center text-gray-600">กำลังโหลดข้อมูล...</p> // แสดงข้อความขณะโหลดข้อมูล
-        ) : (
-          <p className="text-center text-green-500">{message}</p> // แสดงข้อความจาก API
-        )}
+        <Header>Welcome to Trading Journal</Header>
+        <Text>ยินดีต้อนรับสู่ Trading Journal</Text>
 
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <div className="mt-8">
+          <SocialIcon href="https://github.com">
+            <i className="fab fa-github"></i>
+          </SocialIcon>
+          <SocialIcon href="https://twitter.com">
+            <i className="fab fa-twitter"></i>
+          </SocialIcon>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Wrap the Button with the Link component to navigate to /login */}
+        <Link href="/login" passHref>
+          <Button>Get Started</Button>
+        </Link>
+      </Card>
     </div>
-  ); 
+  );
 }

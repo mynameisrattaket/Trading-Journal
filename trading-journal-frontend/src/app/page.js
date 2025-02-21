@@ -1,15 +1,25 @@
+"use client";  // เพิ่มบรรทัดนี้เพื่อระบุว่าไฟล์นี้เป็น Client Component
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function Home() {
   const [message, setMessage] = useState(""); // state สำหรับเก็บข้อความจาก backend
+  const [loading, setLoading] = useState(true); // state สำหรับเช็คการโหลดข้อมูล
 
   useEffect(() => {
     // ทำการเรียก API จาก backend
     fetch("http://localhost:3001")  // แก้ไข URL ให้ตรงกับ API ของ backend
       .then((response) => response.text())
-      .then((data) => setMessage(data)) // เก็บข้อมูลจาก API
-      .catch((err) => console.error("Error fetching data: ", err));
+      .then((data) => {
+        setMessage(data); // เก็บข้อมูลจาก API
+        setLoading(false); // ปิดสถานะโหลดเมื่อได้ข้อมูลแล้ว
+      })
+      .catch((err) => {
+        console.error("Error fetching data: ", err);
+        setMessage("ไม่สามารถดึงข้อมูลจาก API ได้");
+        setLoading(false); // ปิดสถานะโหลดแม้จะมีข้อผิดพลาด
+      });
   }, []);
 
   return (
@@ -23,8 +33,13 @@ export default function Home() {
           height={38}
           priority
         />
-        <h1 className="text-2xl text-center">Welcome to Trading Journal</h1>
-        <p className="text-center">{message}</p> {/* แสดงข้อความที่มาจาก API */}
+        <h1 className="text-2xl text-center text-gray-800 dark:text-white">Welcome to Trading Journal</h1>
+        
+        {loading ? (
+          <p className="text-center text-gray-600">กำลังโหลดข้อมูล...</p> // แสดงข้อความขณะโหลดข้อมูล
+        ) : (
+          <p className="text-center text-green-500">{message}</p> // แสดงข้อความจาก API
+        )}
 
         <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
           <li className="mb-2">
@@ -111,5 +126,5 @@ export default function Home() {
         </a>
       </footer>
     </div>
-  );
+  ); 
 }

@@ -1,56 +1,84 @@
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
-const dotenv = require('dotenv');
-
-// ใช้ dotenv เพื่อโหลดข้อมูลการตั้งค่าจาก .env
-dotenv.config();
+const bcrypt = require('bcrypt');
+const cors = require('cors'); // ✅ เพิ่ม CORS
 
 const app = express();
 const port = 3001;
 
+// ✅ เปิดการใช้งาน CORS
+app.use(cors());
+
+// ✅ ถ้าต้องการระบุ origin แบบเฉพาะเจาะจง (เช่นให้ frontend ที่รันที่ http://localhost:3000 เท่านั้นเข้าถึงได้)
+app.use(cors({
+  origin: 'http://localhost:3000', // เปลี่ยนเป็น URL ของ frontend ถ้าโฮสต์จริง
+  methods: ['GET', 'POST'], // อนุญาตเฉพาะเมทอด GET, POST
+  allowedHeaders: ['Content-Type'] // อนุญาตเฉพาะบาง header
+}));
+
 app.use(express.json());
 
-// เชื่อมต่อฐานข้อมูล MySQL
+// ตั้งค่าการเชื่อมต่อฐานข้อมูล
 const db = mysql.createConnection({
-  host: 'caboose.proxy.rlwy.net', // จาก Railway
-  user: 'root',
-  password: process.env.MYSQL_PASSWORD, // ใช้ password ที่เก็บไว้ใน .env
-  database: 'railway', // ชื่อฐานข้อมูล
-  port: 29570,
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  port: process.env.MYSQL_PORT,
 });
 
+// เชื่อมต่อฐานข้อมูล
 db.connect((err) => {
   if (err) {
-    console.error('Error connecting to the database:', err.stack);
+    console.error('Database connection error:', err.stack);
     return;
   }
   console.log('Connected to the database');
 });
 
-// Endpoint สำหรับการลงทะเบียนผู้ใช้ใหม่
-app.post('/api/register', (req, res) => {
+// Endpoint ลงทะเบียน
+app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
 
-  // เพิ่มผู้ใช้ใหม่ในฐานข้อมูล
-  const query = 'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)';
-  db.query(query, [username, email, password], (err, result) => {
-    if (err) {
-      console.error('Error registering user:', err.stack);
-      return res.status(500).json({ message: 'Registration failed' });
-    }
-    res.status(201).json({ message: 'Registration successful' });
-  });
+  if (!username || !email || !password) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  try {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const query = 'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)';
+    db.query(query, [username, email, hashedPassword], (err, result) => {
+      if (err) {
+        console.error('Error registering user:', err);
+        if (err.code === 'ER_DUP_ENTRY') {
+          return res.status(400).json({ message: 'Username or email already exists' });
+        }
+        return res.status(500).json({ message: 'Registration failed' });
+      }
+      res.status(201).json({ message: 'Registration successful' });
+    });
+  } catch (error) {
+    console.error('Error hashing password:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-// Endpoint สำหรับการเข้าสู่ระบบ
+
+// Endpoint เข้าสู่ระบบ
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
 
-  // ค้นหาผู้ใช้ในฐานข้อมูล
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+
   const query = 'SELECT * FROM users WHERE username = ?';
-  db.query(query, [username], (err, result) => {
+  db.query(query, [username], async (err, result) => {
     if (err) {
-      console.error('Error finding user:', err.stack);
+      console.error('Error finding user:', err);
       return res.status(500).json({ message: 'Login failed' });
     }
 
@@ -59,7 +87,9 @@ app.post('/api/login', (req, res) => {
     }
 
     const user = result[0];
-    if (user.password_hash === password) {
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    
+    if (isMatch) {
       res.status(200).json({ message: 'Login successful' });
     } else {
       res.status(400).json({ message: 'Invalid credentials' });

@@ -1,21 +1,67 @@
+/* ใช้ Tailwind CSS directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* กำหนดสีพื้นฐานสำหรับโหมดปกติ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ffffff; /* สีพื้นหลังในโหมดปกติ */
+  --foreground: #171717;  /* สีตัวอักษรในโหมดปกติ */
 }
 
+/* กำหนดสีสำหรับโหมดมืด */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0a0a0a; /* สีพื้นหลังในโหมดมืด */
+    --foreground: #ededed;  /* สีตัวอักษรในโหมดมืด */
   }
 }
 
+/* กำหนดสไตล์สำหรับ body */
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--foreground); /* ใช้สีตัวอักษรที่กำหนด */
+  background: var(--background); /* ใช้สีพื้นหลังที่กำหนด */
+  font-family: Arial, Helvetica, sans-serif; /* ฟอนต์พื้นฐาน */
+  margin: 0;
+  padding: 0;
+}
+
+/* กำหนดสไตล์สำหรับลิงก์ */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* กำหนดสไตล์ให้กับหัวข้อ */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+}
+
+/* กำหนดสไตล์สำหรับฟอร์ม */
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  border-radius: 8px; /* รัศมีมุม */
+}
+
+/* ปรับสไตล์ฟอร์ม input ให้มีขนาดเต็ม */
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
 }

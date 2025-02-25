@@ -52,11 +52,11 @@ app.post('/api/register', async (req, res) => {
     const query = 'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)';
     db.query(query, [username, email, hashedPassword], (err, result) => {
       if (err) {
-        console.error('Error registering user:', err);
+        console.error('Error registering user:', err); // แสดงข้อผิดพลาดในคอนโซล
         if (err.code === 'ER_DUP_ENTRY') {
           return res.status(400).json({ message: 'Username or email already exists' });
         }
-        return res.status(500).json({ message: 'Registration failed' });
+        return res.status(500).json({ message: 'Registration failed, ' + err.message });
       }
       res.status(201).json({ message: 'Registration successful' });
     });

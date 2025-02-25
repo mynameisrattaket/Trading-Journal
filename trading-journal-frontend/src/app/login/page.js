@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import axios from "axios";
+import { signInWithEmailAndPassword } from "firebase/auth"; // นำเข้าฟังก์ชัน signIn
+import { auth } from "../config/firebase-config";  // ขึ้นไป 2 ระดับ
 import Link from "next/link";
 import styled from "styled-components";
 
@@ -92,7 +93,9 @@ const StyledLink = styled(Link)`
 `;
 
 export default function Login() {
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -100,11 +103,16 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
     try {
-      const res = await axios.post("http://localhost:3001/api/login", formData);
+      // ใช้ signInWithEmailAndPassword จาก Firebase Auth
+      await signInWithEmailAndPassword(auth, formData.email, formData.password);
       alert("Login successful!");
     } catch (error) {
-      alert("Login failed: " + error.response?.data?.message);
+      setErrorMessage(error.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,11 +121,12 @@ export default function Login() {
       <Form onSubmit={handleSubmit}>
         <Title>Welcome Back!</Title>
         
-        {/* Username Input */}
+        {/* Email Input */}
         <Input
-          type="text"
-          name="username"
-          placeholder="Username"
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
           onChange={handleChange}
           required
         />
@@ -127,12 +136,20 @@ export default function Login() {
           type="password"
           name="password"
           placeholder="Password"
+          value={formData.password}
           onChange={handleChange}
           required
         />
         
-        {/* Login Button */}
-        <Button type="submit">Login</Button>
+        {/* Error message display */}
+        {errorMessage && (
+          <div style={{ color: "red", marginBottom: "10px" }}>{errorMessage}</div>
+        )}
+
+        {/* Submit Button */}
+        <Button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </Button>
 
         {/* Register Link */}
         <RegisterLink>

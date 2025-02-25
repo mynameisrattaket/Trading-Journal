@@ -1,8 +1,11 @@
-"use client";
+'use client';
 
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Image from "next/image";
-import Link from 'next/link'; // Import Link component from Next.js
+import Link from "next/link";
+import { useAuth } from './contexts/AuthContext';  // เส้นทางที่ถูกต้อง
+
 // Styled components
 const Header = styled.h1`
   font-size: 3.8rem;
@@ -52,31 +55,45 @@ const SocialIcon = styled.a`
 
 const Button = styled.button`
   background-color: transparent;
-  color: #3498db; /* Elegant blue tone */
+  color: #3498db;
   font-size: 1.2rem;
-  border: 2px solid #3498db; /* Outline border */
+  border: 2px solid #3498db;
   padding: 12px 40px;
   border-radius: 50px;
   margin-top: 30px;
   cursor: pointer;
   transition: all 0.3s ease;
 
-  /* Subtle hover effect */
   &:hover {
     background-color: #3498db;
     color: white;
-    transform: translateY(-2px); /* Slight lift */
+    transform: translateY(-2px);
   }
 
-  /* Focus effect for accessibility */
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #3498db; /* Focus ring */
+    box-shadow: 0 0 0 2px #3498db;
   }
 `;
 
+const LogoutButton = styled(Button)`
+  background-color: #e74c3c;
+  color: white;
 
-export default function Home() {
+  &:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+  }
+`;
+
+const Home = () => {
+  const { user, logout } = useAuth(); // ใช้ useAuth เพื่อตรวจสอบสถานะการล็อกอิน
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!user); // ถ้ามี user แสดงว่า user ได้ล็อกอิน
+  }, [user]);
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <Card>
@@ -90,6 +107,19 @@ export default function Home() {
         <Header>Welcome to Trading Journal</Header>
         <Text>ยินดีต้อนรับสู่ Trading Journal</Text>
 
+        {isLoggedIn ? (
+          <div className="mt-8">
+            <span>สวัสดี, {user.displayName || 'User'}!</span> {/* แสดงชื่อผู้ใช้ */}
+            <LogoutButton onClick={logout}>Logout</LogoutButton> {/* ปุ่ม Logout */}
+          </div>
+        ) : (
+          <div className="mt-8">
+            <Link href="/login" passHref>
+              <Button>Login</Button> {/* ปุ่ม Login */}
+            </Link>
+          </div>
+        )}
+
         <div className="mt-8">
           <SocialIcon href="https://github.com">
             <i className="fab fa-github"></i>
@@ -98,12 +128,9 @@ export default function Home() {
             <i className="fab fa-twitter"></i>
           </SocialIcon>
         </div>
-
-        {/* Wrap the Button with the Link component to navigate to /login */}
-        <Link href="/login" passHref>
-          <Button>Get Started</Button>
-        </Link>
       </Card>
     </div>
   );
-}
+};
+
+export default Home;

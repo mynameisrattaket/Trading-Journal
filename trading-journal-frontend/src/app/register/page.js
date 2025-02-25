@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import axios from "axios";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { auth } from "../config/firebase-config";  // ขึ้นไป 2 ระดับ
 import Link from "next/link";
 import styled from "styled-components";
 
@@ -105,12 +106,17 @@ export default function Register() {
     setLoading(true);
     setErrorMessage("");
     try {
-      const res = await axios.post("http://localhost:3001/api/register", formData);
-      alert("Registration successful!");
+      // ใช้ Firebase Authentication สำหรับการลงทะเบียน
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      
+      // ส่งอีเมลยืนยันตัวตน
+      await sendEmailVerification(userCredential.user);
+      
+      alert("Registration successful! Please check your email to verify your account.");
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setErrorMessage(error.response?.data?.message || "Registration failed. Please try again.");
+      setErrorMessage(error.message || "Registration failed. Please try again.");
     }
   };
 

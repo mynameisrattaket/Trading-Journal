@@ -1,8 +1,10 @@
+// layout.js
+
 import 'bootstrap/dist/css/bootstrap.min.css';  // นำเข้า Bootstrap
 import './styles/globals.css';  // นำเข้า Tailwind CSS และการตั้งค่า
 import { Roboto, Poppins } from 'next/font/google';  // นำเข้าฟอนต์จาก Google Fonts
+import { AuthProvider } from './contexts/AuthContext'; // ใช้เส้นทางสัมพัทธ์ที่ถูกต้อง
 
-// ตั้งค่าฟอนต์ Roboto และ Poppins
 const roboto = Roboto({
   subsets: ['latin'],
   weight: '400',
@@ -22,17 +24,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* การนำเข้า Font Awesome CSS */}
-        <link 
-          rel="stylesheet" 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" 
-        />
-        {/* Meta Tags for Title and Description */}
         <meta name="description" content={metadata.description} />
         <title>{metadata.title}</title>
       </head>
       <body className={`${roboto.className} ${poppins.className} antialiased`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

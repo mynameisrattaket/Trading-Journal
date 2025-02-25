@@ -3,6 +3,8 @@ const express = require('express');
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const cors = require('cors'); // ✅ เพิ่ม CORS
+const { auth, provider } = require('./firebase-config'); // เพิ่มการนำเข้า Firebase
+const { signInWithCredential, EmailAuthProvider } = require('firebase/auth');
 
 const app = express();
 const port = 3001;
@@ -37,7 +39,7 @@ db.connect((err) => {
   console.log('Connected to the database');
 });
 
-// Endpoint ลงทะเบียน
+// Endpoint ลงทะเบียน (register)
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -52,7 +54,7 @@ app.post('/api/register', async (req, res) => {
     const query = 'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)';
     db.query(query, [username, email, hashedPassword], (err, result) => {
       if (err) {
-        console.error('Error registering user:', err); // แสดงข้อผิดพลาดในคอนโซล
+        console.error('Error registering user:', err);
         if (err.code === 'ER_DUP_ENTRY') {
           return res.status(400).json({ message: 'Username or email already exists' });
         }
@@ -66,8 +68,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-
-// Endpoint เข้าสู่ระบบ
+// Endpoint เข้าสู่ระบบ (login)
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -97,6 +98,51 @@ app.post('/api/login', (req, res) => {
   });
 });
 
+// Endpoint เข้าสู่ระบบด้วย Google (Google login)
+app.post('/api/google-login', async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ message: 'ID Token is required' });
+  }
+
+  try {
+    // ใช้ Firebase เพื่อตรวจสอบ ID Token
+    const credential = await auth.GoogleAuthProvider.credential(idToken);
+    const userCredential = await signInWithCredential(auth, credential);
+
+    const user = userCredential.user;
+    const email = user.email;
+    const username = user.displayName;
+
+    // เช็คว่าอีเมลมีในฐานข้อมูลหรือยัง
+    const query = 'SELECT * FROM users WHERE email = ?';
+    db.query(query, [email], (err, result) => {
+      if (err) {
+        console.error('Error finding user:', err);
+        return res.status(500).json({ message: 'Login failed' });
+      }
+
+      if (result.length === 0) {
+        // ถ้ายังไม่มีข้อมูลในฐานข้อมูล ให้สร้างบัญชีใหม่
+        const insertQuery = 'INSERT INTO users (username, email) VALUES (?, ?)';
+        db.query(insertQuery, [username, email], (insertErr) => {
+          if (insertErr) {
+            console.error('Error inserting user:', insertErr);
+            return res.status(500).json({ message: 'User creation failed' });
+          }
+          res.status(200).json({ message: 'Google login successful and new user created' });
+        });
+      } else {
+        res.status(200).json({ message: 'Google login successful' });
+      }
+    });
+  } catch (error) {
+    console.error('Error during Google login:', error);
+    res.status(500).json({ message: 'Google login failed' });
+  }
+});
+
 // เริ่มต้นเซิร์ฟเวอร์
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
@@ -105,4 +151,3 @@ app.listen(port, () => {
 app.get('/', (req, res) => {
   res.send('Welcome to the backend server!');
 });
-

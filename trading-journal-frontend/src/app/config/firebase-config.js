@@ -1,6 +1,5 @@
-// firebase-config.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";  // เพิ่ม signInWithPopup
 
 // Firebase configuration
 const firebaseConfig = {
@@ -9,12 +8,18 @@ const firebaseConfig = {
   projectId: "trading-journal-dd458", // ใช้ Project ID ของคุณ
   storageBucket: "trading-journal-dd458.appspot.com",
   messagingSenderId: "537759680433",
-  appId: "1:537759680433:web:xxxxxxxxxxxxxxxxxx",
+  appId: "1:537759680433:web:xxxxxxxxxxxxxxxxxx", // ใช้ App ID ของคุณ
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export Firebase Auth
-export const auth = getAuth(app);
+// Initialize Firebase Auth
+const auth = getAuth(app);
+
+// Initialize GoogleAuthProvider สำหรับล็อกอินผ่าน Google
+const provider = new GoogleAuthProvider();
+
+// Export Firebase Auth, Google Auth Provider, และ signInWithPopup
+export { auth, provider, signInWithPopup };
 export default app;

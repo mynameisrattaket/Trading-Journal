@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import { auth, provider, signInWithPopup } from "../config/firebase-config";  // นำเข้าจาก firebase-config.js
+import { signInWithEmailAndPassword } from "firebase/auth"; // นำเข้าฟังก์ชัน signIn
+import { auth } from "../config/firebase-config";  // ขึ้นไป 2 ระดับ
 import Link from "next/link";
 import styled from "styled-components";
 
@@ -105,23 +106,13 @@ export default function Login() {
     setLoading(true);
     setErrorMessage("");
     try {
+      // ใช้ signInWithEmailAndPassword จาก Firebase Auth
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
       alert("Login successful!");
     } catch (error) {
       setErrorMessage(error.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, provider); // ใช้ signInWithPopup
-      const user = result.user;
-      alert("Google login successful!");
-      console.log(user);
-    } catch (error) {
-      setErrorMessage(error.message || "Google login failed.");
     }
   };
 
@@ -158,11 +149,6 @@ export default function Login() {
         {/* Submit Button */}
         <Button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
-        </Button>
-
-        {/* Google Login Button */}
-        <Button onClick={handleGoogleLogin} disabled={loading} style={{ backgroundColor: '#DB4437', marginTop: '10px' }}>
-          {loading ? "Logging in..." : "Login with Google"}
         </Button>
 
         {/* Register Link */}

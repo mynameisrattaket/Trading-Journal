@@ -180,10 +180,17 @@ const FeatureCard = styled.div`
 const Home = () => {
   const { user, logout } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('theme');
-    return savedTheme ? savedTheme : 'light';
-  });
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    // ทำงานเฉพาะในฝั่ง client เท่านั้น
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     setIsLoggedIn(!!user);
@@ -192,7 +199,10 @@ const Home = () => {
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
+    // บันทึกธีมใน localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem('theme', newTheme);
+    }
   };
 
   return (

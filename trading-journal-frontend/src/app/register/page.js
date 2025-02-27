@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../config/firebase-config";  // ขึ้นไป 2 ระดับ
 import Link from "next/link";
 import styled from "styled-components";
+import { useRouter } from "next/navigation"; // ใช้สำหรับการ redirect
 
 const Wrapper = styled.div`
   display: flex;
@@ -92,10 +93,20 @@ const StyledLink = styled(Link)`
   }
 `;
 
+const GoogleButton = styled(Button)`
+  background-color: #db4437; /* Google red color */
+  margin-top: 15px;
+  
+  &:hover {
+    background-color: #c1351d;
+  }
+`;
+
 export default function Register() {
   const [formData, setFormData] = useState({ username: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter(); // สำหรับการ redirect
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -119,6 +130,9 @@ export default function Register() {
       setFormData({ username: "", email: "", password: "" });
       
       setLoading(false);
+      
+      // Redirect to Home page
+      router.push("/"); // Redirect to Home page
     } catch (error) {
       setLoading(false);
       // Handle specific errors
@@ -129,6 +143,18 @@ export default function Register() {
       } else {
         setErrorMessage(error.message || "Registration failed. Please try again.");
       }
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      // After successful Google login
+      alert("Login with Google successful!");
+      router.push("/"); // Redirect to Home page after successful Google login
+    } catch (error) {
+      setErrorMessage(error.message || "Google login failed. Please try again.");
     }
   };
 
@@ -176,6 +202,11 @@ export default function Register() {
         <Button type="submit" disabled={loading}>
           {loading ? "Registering..." : "Register"}
         </Button>
+
+        {/* Google Register Button */}
+        <GoogleButton type="button" onClick={handleGoogleLogin}>
+          Register with Google
+        </GoogleButton>
 
         {/* Login Link */}
         <RegisterLink>

@@ -2,134 +2,111 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import Image from "next/image";
 import Link from "next/link";
-import { useAuth } from './contexts/AuthContext';  // เส้นทางที่ถูกต้อง
+import { useAuth } from "./contexts/AuthContext";
 
 // Styled components
-const Header = styled.h1`
-  font-size: 3.8rem;
-  font-weight: 700;
-  color: transparent;
-  background: linear-gradient(90deg, #3498db, #f39c12);
-  -webkit-background-clip: text;
-  margin-bottom: 20px;
+const Container = styled.div`
+  background-color: #000; /* Black background */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
 `;
 
-const Text = styled.p`
-  font-size: 1.35rem;
-  color: #34495e;
-  margin-bottom: 30px;
-  line-height: 1.8;
-`;
-
-const Card = styled.div`
-  background: #fff;
-  background-image: linear-gradient(to bottom right, #ffffff, #f0f4f8);
-  box-shadow: 0px 12px 30px rgba(0, 0, 0, 0.1);
-  border-radius: 30px;
-  padding: 50px;
+const NavBar = styled.div`
+  display: flex;
+  justify-content: space-between;
   width: 100%;
-  max-width: 650px;
-  text-align: center;
-  margin: auto;
-  transition: all 0.3s ease-in-out;
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.2);
-  }
+  padding: 20px;
+  align-items: center;
 `;
 
-const SocialIcon = styled.a`
-  font-size: 2.5rem;
-  color: #34495e;
-  margin: 0 20px;
-  transition: color 0.3s ease, transform 0.3s ease;
-  
-  &:hover {
-    color: #3498db;
-    transform: scale(1.1);
-  }
+const Logo = styled.div`
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffffff;
+`;
+
+const Header = styled.h1`
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+`;
+
+const SubHeader = styled.h2`
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #aab2c3;
+  text-align: center;
 `;
 
 const Button = styled.button`
-  background-color: transparent;
-  color: #3498db;
-  font-size: 1.2rem;
-  border: 2px solid #3498db;
-  padding: 12px 40px;
-  border-radius: 50px;
-  margin-top: 30px;
+  background-color: #ff7b00; /* Orange color */
+  color: #fff;
+  font-size: 1rem;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  text-decoration: none;
+  transition: background-color 0.3s ease, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
 
   &:hover {
-    background-color: #3498db;
-    color: white;
-    transform: translateY(-2px);
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #3498db;
+    background-color: #e66a00;
+    transform: scale(1.05);
   }
 `;
 
-const LogoutButton = styled(Button)`
-  background-color: #e74c3c;
-  color: white;
-
-  &:hover {
-    background-color: #c0392b;
-    transform: translateY(-2px);
-  }
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 15px;
+  align-items: center;
 `;
 
 const Home = () => {
-  const { user, logout } = useAuth(); // ใช้ useAuth เพื่อตรวจสอบสถานะการล็อกอิน
+  const { user, logout } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(!!user); // ถ้ามี user แสดงว่า user ได้ล็อกอิน
+    setIsLoggedIn(!!user);
   }, [user]);
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100">
-      <Card>
-        <Image
-          className="mx-auto mb-6"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-        />
-        <Header>Welcome to Trading Journal</Header>
-        <Text>ยินดีต้อนรับสู่ Trading Journal</Text>
-
-        {isLoggedIn ? (
-          <div className="mt-8">
-            <span>สวัสดี, {user.displayName || 'User'}!</span> {/* แสดงชื่อผู้ใช้ */}
-            <LogoutButton onClick={logout}>Logout</LogoutButton> {/* ปุ่ม Logout */}
-          </div>
-        ) : (
-          <div className="mt-8">
-            <Link href="/login" passHref>
-              <Button>Login</Button> {/* ปุ่ม Login */}
-            </Link>
-          </div>
-        )}
-
-        <div className="mt-8">
-          <SocialIcon href="https://github.com">
-            <i className="fab fa-github"></i>
-          </SocialIcon>
-          <SocialIcon href="https://twitter.com">
-            <i className="fab fa-twitter"></i>
-          </SocialIcon>
-        </div>
-      </Card>
-    </div>
+    <Container>
+      <NavBar>
+        <Logo>Trading Journal</Logo>
+        <ButtonContainer>
+          {isLoggedIn ? (
+            <>
+              <span>Welcome, {user?.displayName || "Trader"}!</span>
+              <Button type="button" onClick={logout}>Sign Out</Button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" passHref>
+                <Button>Login</Button> {/* ✅ แก้แล้ว */}
+              </Link>
+              <Link href="/get-started" passHref>
+                <Button>Get Started</Button>
+              </Link>
+            </>
+          )}
+        </ButtonContainer>
+      </NavBar>
+      <Header>
+        Trading Journal for <span style={{ color: "#ff7b00" }}>everyone</span>.
+      </Header>
+      <SubHeader>
+        A powerful, easy-to-use, and ad-free trading journal to enhance your trading experience.
+      </SubHeader>
+    </Container>
   );
 };
 

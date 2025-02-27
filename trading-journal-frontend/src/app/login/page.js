@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import { loginWithEmail, loginWithGoogle } from "../config/firebase-config";  // นำเข้าฟังก์ชันที่ถูกต้อง
+import { useRouter } from "next/navigation"; // Import useRouter
+import { loginWithEmail, loginWithGoogle } from "../config/firebase-config";  
 import Link from "next/link";
 import styled from "styled-components";
 
@@ -10,7 +11,7 @@ const Wrapper = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #4FD1C5, #667EEA); /* Smooth gradient background */
+  background: linear-gradient(135deg, #4FD1C5, #667EEA);
 `;
 
 const Form = styled.form`
@@ -95,6 +96,7 @@ export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter(); // ใช้ useRouter
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -105,8 +107,8 @@ export default function Login() {
     setLoading(true);
     setErrorMessage("");
     try {
-      await loginWithEmail(formData.email, formData.password); // ใช้ฟังก์ชันที่นำเข้ามา
-      alert("Login successful!");
+      await loginWithEmail(formData.email, formData.password);
+      router.push("/"); // ✅ ไปที่หน้า Home
     } catch (error) {
       setErrorMessage(error.message || "Login failed. Please try again.");
     } finally {
@@ -116,8 +118,8 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      await loginWithGoogle(); // ใช้ฟังก์ชันที่นำเข้ามา
-      alert("Google login successful!");
+      await loginWithGoogle();
+      router.push("/"); // ✅ ไปที่หน้า Home
     } catch (error) {
       setErrorMessage(error.message || "Google login failed.");
     }
@@ -127,8 +129,7 @@ export default function Login() {
     <Wrapper>
       <Form onSubmit={handleSubmit}>
         <Title>Welcome Back!</Title>
-        
-        {/* Email Input */}
+
         <Input
           type="email"
           name="email"
@@ -137,8 +138,7 @@ export default function Login() {
           onChange={handleChange}
           required
         />
-        
-        {/* Password Input */}
+
         <Input
           type="password"
           name="password"
@@ -147,23 +147,19 @@ export default function Login() {
           onChange={handleChange}
           required
         />
-        
-        {/* Error message display */}
+
         {errorMessage && (
           <div style={{ color: "red", marginBottom: "10px" }}>{errorMessage}</div>
         )}
 
-        {/* Submit Button */}
         <Button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </Button>
 
-        {/* Google Login Button */}
         <Button onClick={handleGoogleLogin} disabled={loading} style={{ backgroundColor: '#DB4437', marginTop: '10px' }}>
           {loading ? "Logging in..." : "Login with Google"}
         </Button>
 
-        {/* Register Link */}
         <RegisterLink>
           Don&apos;t have an account?{' '}
           <StyledLink href="/register">Register here</StyledLink>

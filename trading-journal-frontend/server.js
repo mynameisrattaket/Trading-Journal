@@ -1,15 +1,17 @@
 const express = require("express");
 const mysql = require("mysql2");
-const cors = require("cors"); // เพิ่มการใช้ CORS
+const cors = require("cors");
 
 require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// เปิดใช้งาน CORS สำหรับทุกโดเมน หรือสามารถระบุเฉพาะที่ต้องการ
+// เปิดใช้งาน CORS สำหรับโดเมนที่ระบุ
 app.use(cors({
-  origin: "http://localhost:3000", // กำหนดให้ frontend ที่พอร์ต 3000 สามารถเข้าถึง backend ได้
+  origin: "http://localhost:3000", // ตั้งให้เฉพาะที่นี่เข้าถึงได้
+  methods: ["GET", "POST"],  // สามารถปรับได้ตามต้องการ
+  allowedHeaders: ["Content-Type"],  // ตั้งค่า headers ที่อนุญาต
 }));
 
 // สร้างการเชื่อมต่อแบบ pool กับฐานข้อมูล MySQL
@@ -21,14 +23,16 @@ const pool = mysql.createPool({
   port: process.env.MYSQL_PORT,
 });
 
+
 // ฟังก์ชันสำหรับดึงข้อมูลผู้ใช้
 const getUsers = () => {
   return new Promise((resolve, reject) => {
     pool.query("SELECT * FROM users", (err, results) => {
       if (err) {
-        reject("Error executing query:", err.stack);
+        reject(new Error("Error executing query: " + err.stack));
+      } else {
+        resolve(results);
       }
-      resolve(results);
     });
   });
 };
@@ -40,7 +44,7 @@ app.get("/users", async (req, res) => {
     res.json(users); // ส่งข้อมูลผู้ใช้ทั้งหมดกลับ
   } catch (err) {
     console.error(err);
-    return res.status(500).send("Error fetching users.");
+    res.status(500).json({ message: "Error fetching users.", error: err.message });
   }
 });
 

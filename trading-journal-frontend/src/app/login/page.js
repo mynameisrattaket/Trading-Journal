@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { auth, provider, signInWithPopup } from "../config/firebase-config";  // นำเข้าจาก firebase-config.js
+import { loginWithEmail, loginWithGoogle } from "../config/firebase-config";  // นำเข้าฟังก์ชันที่ถูกต้อง
 import Link from "next/link";
 import styled from "styled-components";
 
@@ -22,7 +22,7 @@ const Form = styled.form`
   width: 100%;
   text-align: center;
   transition: all 0.3s ease-in-out;
-  
+
   &:hover {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   }
@@ -45,7 +45,7 @@ const Input = styled.input`
   color: #4A5568;
   background: #F7FAFC;
   transition: all 0.3s;
-  
+
   &:focus {
     border-color: #667EEA;
     outline: none;
@@ -64,12 +64,12 @@ const Button = styled.button`
   border: none;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s ease-in-out;
-  
+
   &:hover {
     background-color: #5A67D8;
     transform: scale(1.05);
   }
-  
+
   &:active {
     transform: scale(1);
   }
@@ -85,7 +85,7 @@ const StyledLink = styled(Link)`
   color: #667EEA;
   font-weight: 500;
   text-decoration: none;
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -105,7 +105,7 @@ export default function Login() {
     setLoading(true);
     setErrorMessage("");
     try {
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      await loginWithEmail(formData.email, formData.password); // ใช้ฟังก์ชันที่นำเข้ามา
       alert("Login successful!");
     } catch (error) {
       setErrorMessage(error.message || "Login failed. Please try again.");
@@ -116,10 +116,8 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, provider); // ใช้ signInWithPopup
-      const user = result.user;
+      await loginWithGoogle(); // ใช้ฟังก์ชันที่นำเข้ามา
       alert("Google login successful!");
-      console.log(user);
     } catch (error) {
       setErrorMessage(error.message || "Google login failed.");
     }

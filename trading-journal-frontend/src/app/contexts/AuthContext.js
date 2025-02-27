@@ -1,6 +1,6 @@
 // src/context/AuthContext.js
 
-'use client';  // เพิ่มบรรทัดนี้
+'use client';
 
 import React, { createContext, useState, useEffect } from 'react';
 import { auth } from '../config/firebase-config';  // ปรับเส้นทางให้ตรง
@@ -24,8 +24,12 @@ export const AuthProvider = ({ children }) => {
 
   // ฟังก์ชันสำหรับออกจากระบบ
   const logout = async () => {
-    await signOut(auth);  // ใช้ Firebase Sign Out
-    setUser(null);  // เคลียร์ข้อมูลผู้ใช้
+    try {
+      await signOut(auth);  // ใช้ Firebase Sign Out
+      setUser(null);  // เคลียร์ข้อมูลผู้ใช้
+    } catch (error) {
+      console.error("Error signing out: ", error);  // ถ้ามีข้อผิดพลาด
+    }
   };
 
   return (

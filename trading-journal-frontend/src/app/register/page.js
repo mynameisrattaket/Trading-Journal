@@ -105,18 +105,30 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
+    
     try {
-      // ใช้ Firebase Authentication สำหรับการลงทะเบียน
+      // Create a user with Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       
-      // ส่งอีเมลยืนยันตัวตน
+      // Send email verification
       await sendEmailVerification(userCredential.user);
       
       alert("Registration successful! Please check your email to verify your account.");
+      
+      // Reset form data after successful registration
+      setFormData({ username: "", email: "", password: "" });
+      
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setErrorMessage(error.message || "Registration failed. Please try again.");
+      // Handle specific errors
+      if (error.code === 'auth/email-already-in-use') {
+        setErrorMessage("This email is already in use. Please try another one.");
+      } else if (error.code === 'auth/weak-password') {
+        setErrorMessage("Password should be at least 6 characters.");
+      } else {
+        setErrorMessage(error.message || "Registration failed. Please try again.");
+      }
     }
   };
 
@@ -157,7 +169,7 @@ export default function Register() {
         
         {/* Error message display */}
         {errorMessage && (
-          <div className="text-red-600 text-center">{errorMessage}</div>
+          <div style={{ color: "red", marginBottom: "10px" }}>{errorMessage}</div>
         )}
 
         {/* Submit Button */}

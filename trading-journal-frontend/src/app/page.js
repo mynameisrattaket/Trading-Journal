@@ -259,7 +259,7 @@ const Home = () => {
                 <Link href="/login" passHref>
                   <Button>{currentLocale?.login || 'Login'}</Button>
                 </Link>
-                <Link href="/get-started" passHref>
+                <Link href="/dashboard" passHref>
                   <Button>{currentLocale?.getStarted || 'Get Started'}</Button>
                 </Link>
               </>

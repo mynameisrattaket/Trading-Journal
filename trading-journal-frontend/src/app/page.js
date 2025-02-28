@@ -123,8 +123,6 @@ const LanguageToggle = styled.button`
   }
 `;
 
-
-
 const Header = styled.h1`
   font-size: 3rem;
   font-weight: 700;
@@ -157,13 +155,14 @@ const Button = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 120px;
+  min-width: 160px; /* กำหนดความกว้างของปุ่มเพื่อให้ไม่ขยับ */
   
   &:hover {
     background: ${(props) => props.theme.buttonHover};
     transform: scale(1.05);
   }
 `;
+
 
 const ButtonContainer = styled.div`
   display: flex;

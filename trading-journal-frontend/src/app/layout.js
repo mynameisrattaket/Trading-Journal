@@ -1,9 +1,10 @@
 // layout.js
-
-import 'bootstrap/dist/css/bootstrap.min.css';  // นำเข้า Bootstrap
-import './styles/globals.css';  // นำเข้า Tailwind CSS และการตั้งค่า
-import { Roboto, Poppins } from 'next/font/google';  // นำเข้าฟอนต์จาก Google Fonts
-import { AuthProvider } from './contexts/AuthContext'; // ใช้เส้นทางสัมพัทธ์ที่ถูกต้อง
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './styles/globals.css';
+import { Roboto, Poppins } from 'next/font/google';
+import { AuthProvider } from './contexts/AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';  // นำเข้า LanguageProvider
+import ClientComponent from './contexts/ClientComponent';  // นำเข้า ClientComponent
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -16,8 +17,8 @@ const poppins = Poppins({
 });
 
 export const metadata = {
-  title: "My Next.js App",  // ชื่อแอปของคุณ
-  description: "An app styled with Bootstrap, Tailwind, and custom fonts",  // คำอธิบายแอป
+  title: "Trading Journal",
+  description: "An app styled with Bootstrap, Tailwind, and custom fonts",
 };
 
 export default function RootLayout({ children }) {
@@ -29,7 +30,11 @@ export default function RootLayout({ children }) {
       </head>
       <body className={`${roboto.className} ${poppins.className} antialiased`}>
         <AuthProvider>
-          {children}
+          <LanguageProvider>
+            <ClientComponent>
+              {children}
+            </ClientComponent>
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>

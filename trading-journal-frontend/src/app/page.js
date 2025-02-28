@@ -1,9 +1,11 @@
-'use client';
+"use client";
 
 import React, { useEffect, useState } from "react";
 import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
 import Link from "next/link";
 import { useAuth } from "./contexts/AuthContext";
+import { useLanguage } from './contexts/LanguageContext';
+
 
 // Define light and dark themes
 const lightTheme = {
@@ -97,6 +99,30 @@ const ThemeToggle = styled.button.withConfig({
   }
 `;
 
+const LanguageToggle = styled.button`
+  background-image: ${(props) => 
+    props.language === 'en' 
+      ? 'url(/images/flags/usa-flag.png)' 
+      : 'url(/images/flags/thai-flag.png)'};
+  background-size: cover;
+  background-position: center;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.9);
+  }
+`;
+
+
 const Header = styled.h1`
   font-size: 3rem;
   font-weight: 700;
@@ -179,18 +205,9 @@ const FeatureCard = styled.div`
 
 const Home = () => {
   const { user, logout } = useAuth();
+  const { language, toggleLanguage, locales } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [theme, setTheme] = useState("light");
-
-  useEffect(() => {
-    // ทำงานเฉพาะในฝั่ง client เท่านั้น
-    if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) {
-        setTheme(savedTheme);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     setIsLoggedIn(!!user);
@@ -199,11 +216,14 @@ const Home = () => {
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    // บันทึกธีมใน localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem('theme', newTheme);
     }
   };
+
+  const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
+
+  const welcomeText = currentLocale?.welcome ? currentLocale.welcome.replace("{name}", user?.displayName || "Trader") : 'Welcome';
 
   return (
     <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
@@ -216,18 +236,22 @@ const Home = () => {
               <div className="toggle-circle" />
               <span>{theme === "dark" ? "🌙" : "🌞"}</span>
             </ThemeToggle>
+            <LanguageToggle language={language} onClick={toggleLanguage}>
+              {/* ปุ่มไม่มีเนื้อหา แต่จะเป็นแค่รูปธง */}
+            </LanguageToggle>
+
             {isLoggedIn ? (
               <>
-                <WelcomeText>Welcome, {user?.displayName || "Trader"}!</WelcomeText>
-                <Button type="button" onClick={logout}>Sign Out</Button>
+                <WelcomeText>{welcomeText}</WelcomeText>
+                <Button type="button" onClick={logout}>{currentLocale?.signOut || 'Sign Out'}</Button>
               </>
             ) : (
               <>
                 <Link href="/login" passHref>
-                  <Button>Login</Button>
+                  <Button>{currentLocale?.login || 'Login'}</Button>
                 </Link>
                 <Link href="/get-started" passHref>
-                  <Button>Get Started</Button>
+                  <Button>{currentLocale?.getStarted || 'Get Started'}</Button>
                 </Link>
               </>
             )}
@@ -236,18 +260,15 @@ const Home = () => {
 
         <ContentWrapper>
           <Header>
-            Trading Journal for <span>everyone</span>.
+            {currentLocale?.tagline || 'Track your trades'} <span>{currentLocale?.subTagline || 'Make better decisions'}</span>
           </Header>
-          <SubHeader>
-            Simple, free, and powerful — the ultimate trading journal for all traders.
-          </SubHeader>
         </ContentWrapper>
 
         <FeatureGrid>
-          <FeatureCard>✅ Track your trades</FeatureCard>
-          <FeatureCard>📊 Analyze your performance</FeatureCard>
-          <FeatureCard>📝 Take detailed notes</FeatureCard>
-          <FeatureCard>🚀 Improve your strategy</FeatureCard>
+          <FeatureCard>{currentLocale?.trackTrades || 'Track Trades'}</FeatureCard>
+          <FeatureCard>{currentLocale?.analyzePerformance || 'Analyze Performance'}</FeatureCard>
+          <FeatureCard>{currentLocale?.takeNotes || 'Take Notes'}</FeatureCard>
+          <FeatureCard>{currentLocale?.improveStrategy || 'Improve Strategy'}</FeatureCard>
         </FeatureGrid>
       </Container>
     </ThemeProvider>

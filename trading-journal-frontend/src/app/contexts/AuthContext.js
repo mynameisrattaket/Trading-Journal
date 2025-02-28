@@ -1,36 +1,39 @@
-// src/context/AuthContext.js
-
 'use client';
 
 import React, { createContext, useState, useEffect } from 'react';
-import { auth } from '../config/firebase-config';  // ปรับเส้นทางให้ตรง
+import { auth } from '../config/firebase-config';  // Adjust path accordingly
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
-// สร้าง context
+// Create context
 const AuthContext = createContext();
 
-// สร้าง provider สำหรับใช้ในส่วนต่างๆ ของแอป
+// AuthProvider to wrap around your components
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isClient, setIsClient] = useState(false);  // Track if we are on the client side
 
   useEffect(() => {
-    // ตรวจสอบสถานะผู้ใช้งานเมื่อเริ่มต้น
+    setIsClient(true); // Set client-side flag to true
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user); // ถ้ามีผู้ใช้งาน จะอัพเดท state
+      setUser(user); // Update user state based on auth changes
     });
-    
-    return () => unsubscribe(); // เมื่อ unmount จะหยุดการเชื่อมต่อ
+
+    return () => unsubscribe(); // Clean up when the component unmounts
   }, []);
 
-  // ฟังก์ชันสำหรับออกจากระบบ
   const logout = async () => {
     try {
-      await signOut(auth);  // ใช้ Firebase Sign Out
-      setUser(null);  // เคลียร์ข้อมูลผู้ใช้
+      await signOut(auth);  // Firebase SignOut
+      setUser(null);  // Clear user state
     } catch (error) {
-      console.error("Error signing out: ", error);  // ถ้ามีข้อผิดพลาด
+      console.error('Error signing out: ', error);  // Handle sign out error
     }
   };
+
+  // Only render the provider after ensuring we're on the client
+  if (!isClient) {
+    return null;  // Or render a loading spinner if needed
+  }
 
   return (
     <AuthContext.Provider value={{ user, logout }}>
@@ -39,4 +42,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => React.useContext(AuthContext);  // hook สำหรับใช้งาน context
+// Custom hook to use authentication context
+export const useAuth = () => React.useContext(AuthContext);

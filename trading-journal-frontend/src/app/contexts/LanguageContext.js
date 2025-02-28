@@ -1,30 +1,41 @@
-"use client"; // บอกว่าไฟล์นี้ทำงานใน client-side เท่านั้น
+"use client"; // Indicating that this file is intended for client-side rendering only
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import locales from '../locales';  // Import locales from a file
+import locales from "../locales"; // Import locales from a file
 
 const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
-  // ตรวจสอบว่าอยู่ใน client-side หรือไม่ ก่อนใช้ localStorage
-  const [language, setLanguage] = useState(() => {
-    if (typeof window !== "undefined") {
-      const savedLanguage = localStorage.getItem("language");
-      return savedLanguage || "en"; // Default to 'en' if no language is set
-    }
-    return "en"; // Default to 'en' if server-side rendering
-  });
+  // State to track whether we are on the client-side
+  const [isClient, setIsClient] = useState(false);
 
+  // Language state initialization: set language based on localStorage or default to 'en'
+  const [language, setLanguage] = useState("en");
+
+  // On client-side, fetch the saved language preference from localStorage
+  useEffect(() => {
+    setIsClient(true); // Mark that the component is mounted on the client-side
+    const savedLanguage = localStorage.getItem("language");
+    setLanguage(savedLanguage || "en"); // Default to 'en' if not set
+  }, []);
+
+  // Toggle language function (switches between 'en' and 'th')
   const toggleLanguage = () => {
-    const newLanguage = language === "en" ? "th" : "en"; // Toggle between languages
+    const newLanguage = language === "en" ? "th" : "en";
     setLanguage(newLanguage);
   };
 
+  // Save the current language to localStorage whenever it changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("language", language); // Save language to localStorage
+    if (isClient) {
+      localStorage.setItem("language", language);
     }
-  }, [language]);
+  }, [language, isClient]);
+
+  // If it's not on the client-side yet, return null or loading state
+  if (!isClient) {
+    return null; // Or you can render a loading indicator, like <Loading />
+  }
 
   return (
     <LanguageContext.Provider value={{ language, toggleLanguage, locales }}>

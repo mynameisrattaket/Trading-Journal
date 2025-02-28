@@ -100,6 +100,7 @@ const ThemeToggle = styled.button.withConfig({
 `;
 
 const LanguageToggle = styled.button`
+  shouldForwardProp: (prop) => prop !== 'language';
   background-image: ${(props) => 
     props.language === 'en' 
       ? 'url(/images/flags/usa-flag.png)' 
@@ -121,6 +122,7 @@ const LanguageToggle = styled.button`
     transform: scale(0.9);
   }
 `;
+
 
 
 const Header = styled.h1`
@@ -203,11 +205,19 @@ const FeatureCard = styled.div`
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
+// เพิ่มการตรวจสอบใน useState เพื่ออ่านค่า theme จาก localStorage
 const Home = () => {
   const { user, logout } = useAuth();
   const { language, toggleLanguage, locales } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [theme, setTheme] = useState("light");
+  
+  // อ่านค่า theme จาก localStorage หรือใช้ light เป็นค่าเริ่มต้น
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('theme') || 'light';
+    }
+    return 'light';
+  });
 
   useEffect(() => {
     setIsLoggedIn(!!user);
@@ -217,12 +227,11 @@ const Home = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     if (typeof window !== "undefined") {
-      localStorage.setItem('theme', newTheme);
+      localStorage.setItem('theme', newTheme);  // บันทึกค่า theme ที่เลือกลงใน localStorage
     }
   };
 
   const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
-
   const welcomeText = currentLocale?.welcome ? currentLocale.welcome.replace("{name}", user?.displayName || "Trader") : 'Welcome';
 
   return (

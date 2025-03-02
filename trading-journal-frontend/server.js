@@ -9,9 +9,9 @@ const port = process.env.PORT || 3000;
 
 // เปิดใช้งาน CORS สำหรับโดเมนที่ระบุ
 app.use(cors({
-  origin: "http://localhost:3000", // ตั้งให้เฉพาะที่นี่เข้าถึงได้
-  methods: ["GET", "POST"],  // สามารถปรับได้ตามต้องการ
-  allowedHeaders: ["Content-Type"],  // ตั้งค่า headers ที่อนุญาต
+  origin: "*", // เปิดให้ทุกโดเมนสามารถเข้าถึงได้
+  methods: ["GET", "POST"], // อนุญาตให้ใช้เมธอด GET และ POST
+  allowedHeaders: ["Content-Type"], // อนุญาต headers ที่ต้องการ
 }));
 
 // สร้างการเชื่อมต่อแบบ pool กับฐานข้อมูล MySQL

@@ -1,15 +1,8 @@
 {
-    "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/next"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/",
-        "dest": "/src/app/page.js"
-      }
-    ]
-  }
-  
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ]
+}

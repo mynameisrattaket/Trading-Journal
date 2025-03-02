@@ -7,7 +7,7 @@ const { auth, provider } = require('./firebase-config'); // เพิ่มก�
 const { signInWithCredential, GoogleAuthProvider } = require('firebase/auth');
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;  // ถ้าไม่มีพอร์ตจาก environment variable ให้ใช้ 3001
 
 // ✅ เปิดการใช้งาน CORS
 app.use(cors());
@@ -152,8 +152,9 @@ app.post('/api/google-login', async (req, res) => {
 
 // เริ่มต้นเซิร์ฟเวอร์
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
+
 
 app.get('/', (req, res) => {
   res.send('Welcome to the backend server!');

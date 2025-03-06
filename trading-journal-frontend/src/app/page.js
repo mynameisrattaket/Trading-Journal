@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
+import styled, { ThemeProvider, createGlobalStyle , keyframes} from "styled-components";
 import Link from "next/link";
 import { useAuth } from "./contexts/AuthContext";
 import { useLanguage } from './contexts/LanguageContext';
+import { motion } from "framer-motion";  // นำเข้า framer-motion
 
 
 // Define light and dark themes
@@ -28,13 +29,50 @@ const darkTheme = {
   cardBg: "#121212",
 };
 
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
+// สร้าง keyframes สำหรับ slide-up
+const slideUp = keyframes`
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+`;
+
 const GlobalStyle = createGlobalStyle`
   body {
     background-color: ${(props) => props.theme.background};
     color: ${(props) => props.theme.text};
-    transition: all 0.3s ease;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    animation: ${fadeIn} 0.5s ease-in-out;  // เพิ่มการ fade-in สำหรับ body
+  }
+
+  h1, h2, h3, p, span {
+    animation: ${slideUp} 1s ease-out;
+  }
+
+  .feature-card {
+    animation: ${slideUp} 1s ease-out;  // เพิ่มการ slide-up สำหรับ FeatureCard
+  }
+
+  /* ป้องกันไม่ให้ไอคอนของธีมขยับ */
+  .toggle-circle,
+  span {
+    animation: none; /* ไม่ให้ไอคอนมีแอนิเมชัน */
   }
 `;
+
 
 const Container = styled.div`
   min-height: 100vh;
@@ -273,11 +311,48 @@ const Home = () => {
         </ContentWrapper>
 
         <FeatureGrid>
-          <FeatureCard>{currentLocale?.trackTrades || 'Track Trades'}</FeatureCard>
-          <FeatureCard>{currentLocale?.analyzePerformance || 'Analyze Performance'}</FeatureCard>
-          <FeatureCard>{currentLocale?.takeNotes || 'Take Notes'}</FeatureCard>
-          <FeatureCard>{currentLocale?.improveStrategy || 'Improve Strategy'}</FeatureCard>
+          <motion.div
+            className="feature-card"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            style={{ padding: '20px', borderRadius: '10px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }} // รักษาขนาดและรูปแบบเดิม
+          >
+            {currentLocale?.trackTrades || 'Track Trades'}
+          </motion.div>
+          
+          <motion.div
+            className="feature-card"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            style={{ padding: '20px', borderRadius: '10px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }} // รักษาขนาดและรูปแบบเดิม
+          >
+            {currentLocale?.analyzePerformance || 'Analyze Performance'}
+          </motion.div>
+          
+          <motion.div
+            className="feature-card"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            style={{ padding: '20px', borderRadius: '10px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }} // รักษาขนาดและรูปแบบเดิม
+          >
+            {currentLocale?.takeNotes || 'Take Notes'}
+          </motion.div>
+          
+          <motion.div
+            className="feature-card"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            style={{ padding: '20px', borderRadius: '10px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }} // รักษาขนาดและรูปแบบเดิม
+          >
+            {currentLocale?.improveStrategy || 'Improve Strategy'}
+          </motion.div>
         </FeatureGrid>
+
+
       </Container>
     </ThemeProvider>
   );

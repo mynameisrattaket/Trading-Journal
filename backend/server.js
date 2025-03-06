@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const cors = require('cors');
 const { auth, provider } = require('./firebase-config'); // เพิ่มการนำเข้า Firebase
 const { signInWithCredential, GoogleAuthProvider } = require('firebase/auth');
-const { updateExchangeRates } = require('./updateExchangeRates');
+
 
 const app = express();
 const port = process.env.PORT || 3001;  // ถ้าไม่มีพอร์ตจาก environment variable ให้ใช้ 3001
@@ -160,9 +160,3 @@ app.listen(port, () => {
 app.get('/', (req, res) => {
   res.send('Welcome to the backend server!');
 });
-
-// เรียกใช้งานทันทีเมื่อเริ่มเซิร์ฟเวอร์
-updateExchangeRates(); 
-
-// ตั้งเวลาให้ทำงานทุกวัน
-setInterval(updateExchangeRates, 24 * 60 * 60 * 1000); // ทุก 24 ชั่วโมง (1 วัน)

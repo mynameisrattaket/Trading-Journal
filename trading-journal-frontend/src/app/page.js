@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "./contexts/AuthContext";
 import { useLanguage } from './contexts/LanguageContext';
 import { motion } from "framer-motion";  // นำเข้า framer-motion
-import Logo from '../components/Logo'; 
+
 
 // Define light and dark themes
 const lightTheme = {
@@ -73,6 +73,7 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
+
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
@@ -90,12 +91,10 @@ const NavBar = styled.div`
   align-items: center;
 `;
 
-/* 
 const Logo = styled.div`
   font-size: 2rem;
   font-weight: bold;
 `;
-*/
 
 const ThemeToggle = styled.button.withConfig({
   shouldForwardProp: (prop) => prop !== 'isDark',
@@ -235,6 +234,13 @@ const FeatureGrid = styled.div`
   max-width: 1000px;
 `;
 
+const FeatureCard = styled.div`
+  background: ${(props) => props.theme.cardBg};
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
 
 // เพิ่มการตรวจสอบใน useState เพื่ออ่านค่า theme จาก localStorage
 const Home = () => {

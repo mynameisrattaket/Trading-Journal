@@ -269,6 +269,7 @@ const Home = () => {
   };
 
   const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
+  
   return (
     <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
       <GlobalStyle />

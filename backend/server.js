@@ -30,6 +30,16 @@ pool.getConnection()
   })
   .catch(err => console.error('❌ Database connection error:', err));
 
+  app.get('/exchange-rates', async (req, res) => {
+    try {
+      const [results] = await pool.query('SELECT id, currency, rate_to_usd FROM exchange_rates');
+      res.json(results); // ส่งข้อมูลกลับไปยัง frontend
+    } catch (err) {
+      console.error('Error fetching exchange rates:', err);
+      res.status(500).send('Error fetching exchange rates');
+    }
+  });
+
 // ✅ ลงทะเบียน (Register)
 app.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
@@ -89,6 +99,8 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 // Start server
 app.listen(port, () => {

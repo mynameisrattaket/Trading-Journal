@@ -1,10 +1,12 @@
-"use client"; // Add this at the top of your file
+"use client";  // Make sure this is at the top of your file
 
 import React, { useEffect, useState } from "react";
 import styled, { keyframes, ThemeProvider, createGlobalStyle } from "styled-components";
 import NavBar from '../NavBar';  // Adjust the path if needed
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from '../contexts/LanguageContext';
+import { useRouter } from 'next/navigation';  // Use next/navigation in the app directory
+import SidebarComponent from '../Sidebar';  // นำเข้ามาใช้
 
 const lightTheme = {
   background: "#fff",
@@ -52,35 +54,6 @@ const Container = styled.div`
   position: relative;
 `;
 
-const Sidebar = styled.div`
-  position: fixed;
-  top: 100px;
-  left: 0;
-  width: 250px;
-  height: calc(100vh - 100px);
-  background: ${(props) => props.theme.cardBg};
-  padding: 20px;
-  box-shadow: none; /* เอา box-shadow ออก */
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-`;
-
-
-const SidebarButton = styled.button`
-  background: ${(props) => props.theme.buttonBg};
-  color: ${(props) => props.theme.buttonText};
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s;
-
-  &:hover {
-    background: ${(props) => props.theme.buttonHover};
-  }
-`;
-
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const { language, toggleLanguage, locales } = useLanguage();
@@ -91,6 +64,8 @@ const Dashboard = () => {
     }
     return 'light';
   });
+
+  const router = useRouter();  // Use next/navigation for client-side routing
 
   useEffect(() => {
     setIsLoggedIn(!!user);
@@ -106,6 +81,10 @@ const Dashboard = () => {
 
   const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
 
+  const handleNavigation = (path) => {
+    router.push(path);  // Use push method for routing
+  };
+
   return (
     <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
       <GlobalStyle />
@@ -116,11 +95,7 @@ const Dashboard = () => {
         toggleLanguage={toggleLanguage} 
       />
       <Container>
-        <Sidebar>
-          <SidebarButton>New Trade</SidebarButton>
-          <SidebarButton>Dashboard</SidebarButton>
-          <SidebarButton>Stats</SidebarButton>
-        </Sidebar>
+        <SidebarComponent handleNavigation={handleNavigation} />
       </Container>
     </ThemeProvider>
   );

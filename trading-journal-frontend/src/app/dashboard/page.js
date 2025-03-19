@@ -228,18 +228,6 @@ const Dashboard = () => {
             <LanguageToggle language={language} onClick={toggleLanguage}>
               {/* ปุ่มไม่มีเนื้อหา แต่จะเป็นแค่รูปธง */}
             </LanguageToggle>
-
-            {isLoggedIn ? (
-              <>
-                <Button type="button" onClick={logout}>{currentLocale?.signOut || 'Sign Out'}</Button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" passHref>
-                  <Button>{currentLocale?.login || 'Login'}</Button>
-                </Link>
-              </>
-            )}
           </ButtonContainer>
         </NavBar>
       </Container>

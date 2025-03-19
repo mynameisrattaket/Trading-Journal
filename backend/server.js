@@ -7,7 +7,18 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors({ origin: 'http://localhost:3000', methods: ['GET', 'POST'], allowedHeaders: ['Content-Type'] }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (['http://localhost:3000', 'https://trading-journal-new.vercel.app'].includes(origin)) {
+      callback(null, true); // Allow the origin
+    } else {
+      callback(new Error('Not allowed by CORS')); // Reject the origin
+    }
+  },
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+}));
+
 app.use(express.json());
 
 // ✅ ใช้ connection pool เพื่อรองรับหลาย request พร้อมกัน

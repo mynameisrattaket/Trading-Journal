@@ -269,8 +269,6 @@ const Home = () => {
   };
 
   const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
-  const welcomeText = currentLocale?.welcome ? currentLocale.welcome.replace("{name}", user?.displayName || "Trader") : 'Welcome';
-
   return (
     <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
       <GlobalStyle />
@@ -288,7 +286,6 @@ const Home = () => {
 
             {isLoggedIn ? (
               <>
-                <WelcomeText>{welcomeText}</WelcomeText>
                 <Button type="button" onClick={logout}>{currentLocale?.signOut || 'Sign Out'}</Button>
               </>
             ) : (

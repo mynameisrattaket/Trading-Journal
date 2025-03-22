@@ -73,13 +73,22 @@ const ExchangeRate = styled.div`
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #ccc;
+    background: ${(props) => props.theme.cardBg}; /* ใช้พื้นหลังตามธีม */
+    color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')}; /* ปรับสีข้อความ */
+  }
+
+  select {
+    cursor: pointer;
   }
 
   h3 {
     margin-top: 10px;
     font-size: 16px;
     font-weight: 600;
+    color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')}; /* เปลี่ยนสีตามธีม */
+    transition: all 0.3s ease-in-out; /* เพิ่ม transition นุ่มๆ */
   }
+
 `;
 
 const SidebarComponent = ({ handleNavigation }) => {
@@ -131,7 +140,7 @@ const SidebarComponent = ({ handleNavigation }) => {
           ))}
         </select>
         {convertedAmount !== null && (
-          <h3>Converted Amount: {convertedAmount} {selectedCurrency}</h3>
+          <h3>Converted Amount: {convertedAmount.toFixed(2)} {selectedCurrency}</h3>
         )}
       </ExchangeRate>
 

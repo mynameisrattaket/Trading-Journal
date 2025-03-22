@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import Link from 'next/link';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 
@@ -15,6 +16,7 @@ const NavBarContainer = styled.div`
 const Logo = styled.div`
   font-size: 2rem;
   font-weight: bold;
+  cursor: pointer;
 `;
 
 const ButtonContainer = styled.div`
@@ -26,7 +28,9 @@ const ButtonContainer = styled.div`
 const NavBar = ({ theme, toggleTheme, language, toggleLanguage }) => {
   return (
     <NavBarContainer>
-      <Logo>Trading Journal</Logo>
+      <Link href="/" passHref legacyBehavior>
+        <Logo as="div">Trading Journal</Logo>
+      </Link>
       <ButtonContainer>
         <ThemeToggle isDark={theme === "dark"} toggleTheme={toggleTheme} />
         <LanguageToggle language={language} toggleLanguage={toggleLanguage} />

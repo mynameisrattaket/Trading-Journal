@@ -1,11 +1,11 @@
 "use client";  // Make sure this is at the top of your file
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled, { keyframes, ThemeProvider, createGlobalStyle } from "styled-components";
 import NavBar from '../NavBar';  // Adjust the path if needed
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from '../contexts/LanguageContext';
-import { useRouter } from 'next/navigation';  // Use next/navigation in the app directory
+import { useRouter } from 'next/navigation';  // Use next/navigation for routing
 
 const lightTheme = {
   background: "#fff",
@@ -40,14 +40,82 @@ const GlobalStyle = createGlobalStyle`
   body {
     background-color: ${(props) => props.theme.background};
     color: ${(props) => props.theme.text};
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
     animation: ${fadeIn} 0.5s ease-in-out;
   }
 `;
 
-const Dashboard = () => {
+const LoginFormContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;  // Adjusted height to make form a bit higher
+  background: ${(props) => props.theme.background};
+  padding: 0 20px;
+`;
+
+const LoginForm = styled.form`
+  background-color: ${(props) => props.theme.cardBg};
+  padding: 35px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  animation: ${fadeIn} 0.8s ease-in-out;
+  margin-top: -20px;  // Adjust form's position upwards slightly
+`;
+
+const Title = styled.h2`
+  color: ${(props) => props.theme.text};
+  margin-bottom: 20px;
+  font-size: 2.2em;
+  font-weight: 600;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 15px;
+  margin: 15px 0;
+  border: 1px solid ${(props) => props.theme.subText};
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.text};
+  font-size: 1em;
+  transition: border-color 0.3s;
+  &:focus {
+    border-color: ${(props) => props.theme.buttonBg};
+    outline: none;
+  }
+`;
+
+const Button = styled.button`
+  width: 100%;
+  padding: 15px;
+  background-color: ${(props) => props.theme.buttonBg};
+  color: ${(props) => props.theme.buttonText};
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2em;
+  margin-top: 20px;
+  transition: background-color 0.3s;
+  &:hover {
+    background-color: ${(props) => props.theme.buttonHover};
+  }
+`;
+
+const RegisterLink = styled.p`
+  margin-top: 15px;
+  color: ${(props) => props.theme.subText};
+  font-size: 1em;
+`;
+
+const Login = () => {
   const { user, logout } = useAuth();
   const { language, toggleLanguage, locales } = useLanguage();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem('theme') || 'light';
@@ -55,11 +123,19 @@ const Dashboard = () => {
     return 'light';
   });
 
-  const router = useRouter();  // Use next/navigation for client-side routing
+  const router = useRouter();
 
-  useEffect(() => {
-    setIsLoggedIn(!!user);
-  }, [user]);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    // Logic for login (e.g., API call for authentication)
+    console.log("Logging in with:", { email, password });
+
+    // On successful login, redirect to home page ("/")
+    router.push("/dashboard"); // Adjust path as needed
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -71,10 +147,6 @@ const Dashboard = () => {
 
   const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
 
-  const handleNavigation = (path) => {
-    router.push(path);  // Use push method for routing
-  };
-
   return (
     <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
       <GlobalStyle />
@@ -84,8 +156,29 @@ const Dashboard = () => {
         language={language} 
         toggleLanguage={toggleLanguage} 
       />
+      <LoginFormContainer>
+        <LoginForm onSubmit={handleLogin}>
+          <Title>Sign In</Title>
+          <Input 
+            type="email" 
+            placeholder="Email Address" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+          />
+          <Input 
+            type="password" 
+            placeholder="Password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+          />
+          <Button type="submit">Log In</Button>
+          <RegisterLink>
+            Don&apos;t have an account? <a href="/register">Create one here</a>
+          </RegisterLink>
+        </LoginForm>
+      </LoginFormContainer>
     </ThemeProvider>
   );
 };
 
-export default Dashboard;
+export default Login;

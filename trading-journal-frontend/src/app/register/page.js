@@ -1,219 +1,197 @@
-'use client';
+"use client";  // Make sure this is at the top of your file
 
-import { useState } from "react";
-import { createUserWithEmailAndPassword, sendEmailVerification, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "../config/firebase-config";  // ขึ้นไป 2 ระดับ
-import Link from "next/link";
-import styled from "styled-components";
-import { useRouter } from "next/navigation"; // ใช้สำหรับการ redirect
+import React, { useEffect, useState } from "react";
+import styled, { keyframes, ThemeProvider, createGlobalStyle } from "styled-components";
+import NavBar from '../NavBar';  // Adjust the path if needed
+import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from '../contexts/LanguageContext';
+import { useRouter } from 'next/navigation';  // Use next/navigation for routing
 
-const Wrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #4FD1C5, #667EEA); /* Smooth gradient background */
-`;
+const lightTheme = {
+  background: "#fff",
+  text: "#000",
+  subText: "#333",
+  buttonBg: "#ff7b00",
+  buttonText: "#fff",
+  buttonHover: "#e66a00",
+  cardBg: "#fff",
+};
 
-const Form = styled.form`
-  background: #fff;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-  transition: all 0.3s ease-in-out;
-  
-  &:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+const darkTheme = {
+  background: "#000",
+  text: "#fff",
+  subText: "#aab2c3",
+  buttonBg: "#ff7b00",
+  buttonText: "#fff",
+  buttonHover: "#e66a00",
+  cardBg: "#000",
+};
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 `;
 
+const GlobalStyle = createGlobalStyle`
+  body {
+    background-color: ${(props) => props.theme.background};
+    color: ${(props) => props.theme.text};
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    animation: ${fadeIn} 0.5s ease-in-out;
+  }
+`;
+
+const RegisterFormContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;  // Adjusted height to make form a bit higher
+  background: ${(props) => props.theme.background};
+  padding: 0 20px;
+`;
+
+const RegisterForm = styled.form`
+  background-color: ${(props) => props.theme.cardBg};
+  padding: 35px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  animation: ${fadeIn} 0.8s ease-in-out;
+  margin-top: -20px;  // Adjust form's position upwards slightly
+`;
+
 const Title = styled.h2`
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #2D3748;
-  margin-bottom: 24px;
+  color: ${(props) => props.theme.text};
+  margin-bottom: 20px;
+  font-size: 2.2em;
+  font-weight: 600;
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 14px;
-  margin-bottom: 20px;
-  border: 1px solid #E2E8F0;
+  padding: 15px;
+  margin: 15px 0;
+  border: 1px solid ${(props) => props.theme.subText};
   border-radius: 8px;
-  font-size: 1rem;
-  color: #4A5568;
-  background: #F7FAFC;
-  transition: all 0.3s;
-  
+  background-color: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.text};
+  font-size: 1em;
+  transition: border-color 0.3s;
   &:focus {
-    border-color: #667EEA;
+    border-color: ${(props) => props.theme.buttonBg};
     outline: none;
-    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
   }
 `;
 
 const Button = styled.button`
   width: 100%;
-  padding: 16px;
-  background-color: #667EEA;
-  color: #fff;
-  font-size: 1.125rem;
-  font-weight: 600;
-  border-radius: 8px;
+  padding: 15px;
+  background-color: ${(props) => props.theme.buttonBg};
+  color: ${(props) => props.theme.buttonText};
   border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s ease-in-out;
-  
+  font-size: 1.2em;
+  margin-top: 20px;
+  transition: background-color 0.3s;
   &:hover {
-    background-color: #5A67D8;
-    transform: scale(1.05);
-  }
-  
-  &:active {
-    transform: scale(1);
+    background-color: ${(props) => props.theme.buttonHover};
   }
 `;
 
 const RegisterLink = styled.p`
-  margin-top: 20px;
-  font-size: 1rem;
-  color: #2D3748;
-`;
-
-const StyledLink = styled(Link)`
-  color: #667EEA;
-  font-weight: 500;
-  text-decoration: none;
-  
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const GoogleButton = styled(Button)`
-  background-color: #db4437; /* Google red color */
   margin-top: 15px;
-  
-  &:hover {
-    background-color: #c1351d;
-  }
+  color: ${(props) => props.theme.subText};
+  font-size: 1em;
 `;
 
-export default function Register() {
-  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const router = useRouter(); // สำหรับการ redirect
+const Register = () => {
+  const { user, logout } = useAuth();
+  const { language, toggleLanguage, locales } = useLanguage();
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('theme') || 'light';
+    }
+    return 'light';
+  });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setErrorMessage("");
     
-    try {
-      // Create a user with Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      
-      // Send email verification
-      await sendEmailVerification(userCredential.user);
-      
-      alert("Registration successful! Please check your email to verify your account.");
-      
-      // Reset form data after successful registration
-      setFormData({ username: "", email: "", password: "" });
-      
-      setLoading(false);
-      
-      // Redirect to Home page
-      router.push("/"); // Redirect to Home page
-    } catch (error) {
-      setLoading(false);
-      // Handle specific errors
-      if (error.code === 'auth/email-already-in-use') {
-        setErrorMessage("This email is already in use. Please try another one.");
-      } else if (error.code === 'auth/weak-password') {
-        setErrorMessage("Password should be at least 6 characters.");
-      } else {
-        setErrorMessage(error.message || "Registration failed. Please try again.");
-      }
+    // Add your registration logic here
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    console.log("Registering with:", { email, password });
+
+    // On successful registration, redirect to login page or home page
+    router.push("/login"); // Redirect to login page after successful registration
+  };
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    if (typeof window !== "undefined") {
+      localStorage.setItem('theme', newTheme);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      // After successful Google login
-      alert("Login with Google successful!");
-      router.push("/"); // Redirect to Home page after successful Google login
-    } catch (error) {
-      setErrorMessage(error.message || "Google login failed. Please try again.");
-    }
-  };
+  const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
 
   return (
-    <Wrapper>
-      <Form onSubmit={handleSubmit}>
-        <Title>Create an Account</Title>
-        
-        {/* Username Input */}
-        <Input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-          required
-        />
-        
-        {/* Email Input */}
-        <Input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-        
-        {/* Password Input */}
-        <Input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        
-        {/* Error message display */}
-        {errorMessage && (
-          <div style={{ color: "red", marginBottom: "10px" }}>{errorMessage}</div>
-        )}
-
-        {/* Submit Button */}
-        <Button type="submit" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
-        </Button>
-
-        {/* Google Register Button */}
-        <GoogleButton type="button" onClick={handleGoogleLogin}>
-          Register with Google
-        </GoogleButton>
-
-        {/* Login Link */}
-        <RegisterLink>
-          Already have an account?{' '}
-          <StyledLink href="/login">Login here</StyledLink>
-        </RegisterLink>
-      </Form>
-    </Wrapper>
+    <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
+      <GlobalStyle />
+      <NavBar 
+        theme={theme} 
+        toggleTheme={toggleTheme} 
+        language={language} 
+        toggleLanguage={toggleLanguage} 
+      />
+      <RegisterFormContainer>
+        <RegisterForm onSubmit={handleRegister}>
+          <Title>Sign Up</Title>
+          <Input 
+            type="email" 
+            placeholder="Email Address" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+          />
+          <Input 
+            type="password" 
+            placeholder="Password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+          />
+          <Input 
+            type="password" 
+            placeholder="Confirm Password" 
+            value={confirmPassword} 
+            onChange={(e) => setConfirmPassword(e.target.value)} 
+          />
+          <Button type="submit">Register</Button>
+          <RegisterLink>
+            Already have an account? <a href="/login">Login here</a>
+          </RegisterLink>
+        </RegisterForm>
+      </RegisterFormContainer>
+    </ThemeProvider>
   );
-}
+};
+
+export default Register;

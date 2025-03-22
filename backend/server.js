@@ -9,7 +9,8 @@ const port = process.env.PORT || 3001;
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (['http://localhost:3000', 'https://trading-journal-new.vercel.app'].includes(origin)) {
+    // Allow requests from specific origins
+    if (!origin || ['http://localhost:3000', 'https://trading-journal-new.vercel.app'].includes(origin)) {
       callback(null, true); // Allow the origin
     } else {
       callback(new Error('Not allowed by CORS')); // Reject the origin
@@ -18,6 +19,7 @@ app.use(cors({
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
+
 
 app.use(express.json());
 

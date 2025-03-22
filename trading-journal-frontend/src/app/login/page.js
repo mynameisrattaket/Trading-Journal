@@ -1,12 +1,14 @@
 "use client";  // Make sure this is at the top of your file
 
 import React, { useState } from "react";
-import styled, { keyframes, ThemeProvider, createGlobalStyle } from "styled-components";
+import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
 import NavBar from '../NavBar';  // Adjust the path if needed
 import { useAuth } from "../contexts/AuthContext";
-import { useLanguage } from '../contexts/LanguageContext';
 import { useRouter } from 'next/navigation';  // Use next/navigation for routing
+import { auth, googleProvider } from "../config/firebase-config";
+import { signInWithPopup } from 'firebase/auth';  // Import Firebase auth functions
 
+// Define your themes
 const lightTheme = {
   background: "#fff",
   text: "#000",
@@ -27,15 +29,7 @@ const darkTheme = {
   cardBg: "#000",
 };
 
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-`;
-
+// Global style for the app
 const GlobalStyle = createGlobalStyle`
   body {
     background-color: ${(props) => props.theme.background};
@@ -43,15 +37,15 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    animation: ${fadeIn} 0.5s ease-in-out;
   }
 `;
 
+// Styling for the form and containers
 const LoginFormContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 90vh;  // Adjusted height to make form a bit higher
+  height: 90vh;  
   background: ${(props) => props.theme.background};
   padding: 0 20px;
 `;
@@ -64,8 +58,6 @@ const LoginForm = styled.form`
   width: 100%;
   max-width: 450px;
   text-align: center;
-  animation: ${fadeIn} 0.8s ease-in-out;
-  margin-top: -20px;  // Adjust form's position upwards slightly
 `;
 
 const Title = styled.h2`
@@ -107,6 +99,22 @@ const Button = styled.button`
   }
 `;
 
+const GoogleButton = styled.button`
+  width: 100%;
+  padding: 15px;
+  background-color:rgb(255, 0, 0);  /* เปลี่ยนเป็นสีแดง */
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2em;
+  margin-top: 15px;
+  transition: background-color 0.3s;
+  &:hover {
+    background-color:rgb(204, 0, 0);  /* เปลี่ยนเป็นสีแดงเข้มเมื่อ hover */
+  }
+`;
+
 const RegisterLink = styled.p`
   margin-top: 15px;
   color: ${(props) => props.theme.subText};
@@ -114,29 +122,85 @@ const RegisterLink = styled.p`
 `;
 
 const Login = () => {
-  const { user, logout } = useAuth();
-  const { language, toggleLanguage, locales } = useLanguage();
+  const { login } = useAuth();
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem('theme') || 'light';
     }
     return 'light';
   });
-
-  const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [language, setLanguage] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('language') || 'en';
+    }
+    return 'en';
+  });
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Logic for login (e.g., API call for authentication)
-    console.log("Logging in with:", { email, password });
-
-    // On successful login, redirect to home page ("/")
-    router.push("/dashboard"); // Adjust path as needed
+    setLoading(true);
+    setError('');
+  
+    try {
+      const response = await fetch("http://localhost:3001/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Login failed");
+  
+      // Store token in localStorage
+      localStorage.setItem("token", data.token);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      // Sign in with popup using Firebase
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+  
+      if (!user) throw new Error("User not found");
+  
+      // Retrieve Firebase ID Token
+      const token = await user.getIdToken();
+  
+      // Send token to backend for validation
+      const response = await fetch("http://localhost:3001/login/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: token }),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Google login failed");
+  
+      // Store the token in localStorage
+      localStorage.setItem("token", token);
+  
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Google Login Error: ", err.message);
+      setError("Google login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
@@ -145,7 +209,13 @@ const Login = () => {
     }
   };
 
-  const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
+  const toggleLanguage = () => {
+    const newLanguage = language === 'en' ? 'th' : 'en';
+    setLanguage(newLanguage);
+    if (typeof window !== "undefined") {
+      localStorage.setItem('language', newLanguage);
+    }
+  };
 
   return (
     <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
@@ -159,19 +229,33 @@ const Login = () => {
       <LoginFormContainer>
         <LoginForm onSubmit={handleLogin}>
           <Title>Sign In</Title>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
           <Input 
             type="email" 
             placeholder="Email Address" 
             value={email} 
             onChange={(e) => setEmail(e.target.value)} 
+            required
           />
           <Input 
             type="password" 
             placeholder="Password" 
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
+            required
           />
-          <Button type="submit">Log In</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Log In"}
+          </Button>
+          <GoogleButton 
+            type="button" 
+            onClick={handleGoogleLogin} 
+            disabled={loading} 
+            style={{ marginTop: '10px' }}
+          >
+            {loading ? "Logging in with Google..." : "Log In with Google"}
+          </GoogleButton>
+
           <RegisterLink>
             Don&apos;t have an account? <a href="/register">Create one here</a>
           </RegisterLink>

@@ -1,13 +1,12 @@
-require('dotenv').config(); // โหลดค่าจาก .env
+require("dotenv").config();
+const admin = require("firebase-admin");
 
-const admin = require('firebase-admin');
-
-// สร้างตัวแปร serviceAccount จากข้อมูลใน .env
+// ใช้ serviceAccount จาก .env
 const serviceAccount = {
-  type: 'service_account',
+  type: "service_account",
   project_id: process.env.FIREBASE_PROJECT_ID,
   private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'), // แก้ไขการเก็บ private_key ให้อยู่ในรูปแบบที่ถูกต้อง
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
   client_email: process.env.FIREBASE_CLIENT_EMAIL,
   client_id: process.env.FIREBASE_CLIENT_ID,
   auth_uri: process.env.FIREBASE_AUTH_URI,
@@ -16,9 +15,12 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
 };
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// Initialize Firebase Admin
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 const auth = admin.auth();
 module.exports = { auth };

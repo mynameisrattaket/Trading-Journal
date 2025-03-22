@@ -3,6 +3,7 @@ const express = require('express');
 const mysql = require('mysql2/promise'); // ✅ ใช้ promise-based
 const bcrypt = require('bcrypt');
 const cors = require('cors');
+const { auth } = require("./firebase-admin"); 
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -113,6 +114,55 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// ✅ API Login ด้วย Google
+app.post("/login/google", async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ error: "Missing idToken" });
+  }
+
+  try {
+    // ✅ ตรวจสอบ idToken
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const { uid, email, name } = decodedToken;
+
+    // ✅ ตรวจสอบว่าผู้ใช้มีใน MySQL หรือยัง
+    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+
+    if (rows.length === 0) {
+      // ✅ ถ้ายังไม่มี -> บันทึกลงฐานข้อมูล (ใช้ `uid` จาก Google เป็น `uid` ของผู้ใช้)
+      await pool.query("INSERT INTO users (username, email, uid) VALUES (?, ?, ?)", [
+        name,    // username
+        email,   // email
+        uid      // ใช้ `uid` จาก Google
+      ]);
+    } else {
+      // ✅ ถ้ามีอยู่แล้ว -> อัปเดตข้อมูลของผู้ใช้ (อัปเดต `uid`)
+      await pool.query("UPDATE users SET uid = ? WHERE email = ?", [
+        uid,    // ใช้ `uid` จาก Google
+        email   // ใช้ `email` เพื่อหาผู้ใช้
+      ]);
+    }
+
+    // ✅ ดึงข้อมูลผู้ใช้
+    const [userRows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    const user = userRows[0];
+
+    res.status(200).json({
+      message: "Login successful!",
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        uid: user.uid
+      }
+    });
+  } catch (err) {
+    console.error("Error verifying Google token:", err);
+    res.status(401).json({ error: "Invalid Google token" });
+  }
+});
 
 
 // Start server

@@ -1,170 +1,91 @@
-'use client';
+"use client";  // Make sure this is at the top of your file
 
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
-import { loginWithEmail, loginWithGoogle } from "../config/firebase-config";  
-import Link from "next/link";
-import styled from "styled-components";
+import React, { useEffect, useState } from "react";
+import styled, { keyframes, ThemeProvider, createGlobalStyle } from "styled-components";
+import NavBar from '../NavBar';  // Adjust the path if needed
+import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from '../contexts/LanguageContext';
+import { useRouter } from 'next/navigation';  // Use next/navigation in the app directory
 
-const Wrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #4FD1C5, #667EEA);
-`;
+const lightTheme = {
+  background: "#fff",
+  text: "#000",
+  subText: "#333",
+  buttonBg: "#ff7b00",
+  buttonText: "#fff",
+  buttonHover: "#e66a00",
+  cardBg: "#fff",
+};
 
-const Form = styled.form`
-  background: #fff;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-  transition: all 0.3s ease-in-out;
+const darkTheme = {
+  background: "#000",
+  text: "#fff",
+  subText: "#aab2c3",
+  buttonBg: "#ff7b00",
+  buttonText: "#fff",
+  buttonHover: "#e66a00",
+  cardBg: "#000",
+};
 
-  &:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 `;
 
-const Title = styled.h2`
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #2D3748;
-  margin-bottom: 24px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 20px;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  font-size: 1rem;
-  color: #4A5568;
-  background: #F7FAFC;
-  transition: all 0.3s;
-
-  &:focus {
-    border-color: #667EEA;
-    outline: none;
-    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+const GlobalStyle = createGlobalStyle`
+  body {
+    background-color: ${(props) => props.theme.background};
+    color: ${(props) => props.theme.text};
+    animation: ${fadeIn} 0.5s ease-in-out;
   }
 `;
 
-const Button = styled.button`
-  width: 100%;
-  padding: 16px;
-  background-color: #667EEA;
-  color: #fff;
-  font-size: 1.125rem;
-  font-weight: 600;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s ease-in-out;
+const Dashboard = () => {
+  const { user, logout } = useAuth();
+  const { language, toggleLanguage, locales } = useLanguage();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem('theme') || 'light';
+    }
+    return 'light';
+  });
 
-  &:hover {
-    background-color: #5A67D8;
-    transform: scale(1.05);
-  }
+  const router = useRouter();  // Use next/navigation for client-side routing
 
-  &:active {
-    transform: scale(1);
-  }
-`;
+  useEffect(() => {
+    setIsLoggedIn(!!user);
+  }, [user]);
 
-const RegisterLink = styled.p`
-  margin-top: 20px;
-  font-size: 1rem;
-  color: #2D3748;
-`;
-
-const StyledLink = styled(Link)`
-  color: #667EEA;
-  font-weight: 500;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-export default function Login() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const router = useRouter(); // ใช้ useRouter
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMessage("");
-    try {
-      await loginWithEmail(formData.email, formData.password);
-      router.push("/"); // ✅ ไปที่หน้า Home
-    } catch (error) {
-      setErrorMessage(error.message || "Login failed. Please try again.");
-    } finally {
-      setLoading(false);
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    if (typeof window !== "undefined") {
+      localStorage.setItem('theme', newTheme);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      await loginWithGoogle();
-      router.push("/"); // ✅ ไปที่หน้า Home
-    } catch (error) {
-      setErrorMessage(error.message || "Google login failed.");
-    }
+  const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
+
+  const handleNavigation = (path) => {
+    router.push(path);  // Use push method for routing
   };
 
   return (
-    <Wrapper>
-      <Form onSubmit={handleSubmit}>
-        <Title>Welcome Back!</Title>
-
-        <Input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-
-        <Input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-
-        {errorMessage && (
-          <div style={{ color: "red", marginBottom: "10px" }}>{errorMessage}</div>
-        )}
-
-        <Button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </Button>
-
-        <Button onClick={handleGoogleLogin} disabled={loading} style={{ backgroundColor: '#DB4437', marginTop: '10px' }}>
-          {loading ? "Logging in..." : "Login with Google"}
-        </Button>
-
-        <RegisterLink>
-          Don&apos;t have an account?{' '}
-          <StyledLink href="/register">Register here</StyledLink>
-        </RegisterLink>
-      </Form>
-    </Wrapper>
+    <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
+      <GlobalStyle />
+      <NavBar 
+        theme={theme} 
+        toggleTheme={toggleTheme} 
+        language={language} 
+        toggleLanguage={toggleLanguage} 
+      />
+    </ThemeProvider>
   );
-}
+};
+
+export default Dashboard;

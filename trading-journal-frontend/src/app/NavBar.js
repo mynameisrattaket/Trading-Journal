@@ -23,7 +23,11 @@ const ButtonContainer = styled.div`
   display: flex;
   gap: 15px;
   align-items: center;
+  position: absolute;
+  right: 20px;  /* ขยับไปทางขวาสุด */
+  transform: translateY(-50%); /* ช่วยให้มันแนวกลางตามแนวตั้ง */
 `;
+
 
 const NavBar = ({ theme, toggleTheme, language, toggleLanguage }) => {
   return (

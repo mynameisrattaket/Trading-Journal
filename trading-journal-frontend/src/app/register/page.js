@@ -6,6 +6,8 @@ import NavBar from '../NavBar';  // Adjust the path if needed
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRouter } from 'next/navigation';  // Use next/navigation for routing
+import { auth, googleProvider } from "../config/firebase-config";
+import { signInWithPopup } from 'firebase/auth';  // Import Firebase auth functions
 
 
 // Define your themes

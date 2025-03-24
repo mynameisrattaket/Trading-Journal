@@ -144,7 +144,7 @@ const SidebarComponent = ({ handleNavigation }) => {
         )}
       </ExchangeRate>
 
-      <SidebarButton onClick={() => handleNavigation('/new-trade')}>
+      <SidebarButton onClick={() => handleNavigation('')}>
         <AiOutlinePlus /> {/* เปลี่ยนเป็นเครื่องหมาย + */}
         New Trade
       </SidebarButton>

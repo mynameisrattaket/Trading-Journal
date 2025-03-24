@@ -164,6 +164,25 @@ app.post("/login/google", async (req, res) => {
   }
 });
 
+app.get('/api/trades', async (req, res) => {
+  try {
+    const query = `
+      SELECT \`id\`, \`user_id\`, \`symbol\`, \`trade_type\`, \`entry_price\`, 
+             \`exit_price\`, \`quantity\`, \`stop_loss\`, \`take_profit\`, 
+             \`status\`, \`created_at\`, \`closed_at\`
+      FROM \`trades\`;
+    `;
+    
+    // Execute the query using async/await
+    const [results] = await pool.execute(query); // Executes the query and waits for the results
+    
+    res.json(results); // Return the results as JSON
+  } catch (err) {
+    console.error('Error executing query:', err);
+    return res.status(500).json({ message: 'Error fetching data', error: err });
+  }
+});
+
 
 // Start server
 app.listen(port, () => {

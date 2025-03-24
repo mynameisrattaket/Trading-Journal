@@ -32,7 +32,7 @@ const ButtonContainer = styled.div`
 const NavBar = ({ theme, toggleTheme, language, toggleLanguage }) => {
   return (
     <NavBarContainer>
-      <Link href="/" passHref legacyBehavior>
+      <Link href="/dashboard" passHref legacyBehavior>
         <Logo as="div">Trading Journal</Logo>
       </Link>
       <ButtonContainer>

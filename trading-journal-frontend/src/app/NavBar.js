@@ -9,7 +9,6 @@ const NavBarContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 1200px;
   padding: 20px;
   margin: 0 auto; /* จัดตำแหน่งกลาง */
 `;
@@ -18,8 +17,8 @@ const Logo = styled.div`
   font-size: 2rem;
   font-weight: bold;
   cursor: pointer;
-  flex-grow: 1; /* ทำให้ Logo ขยายเต็มพื้นที่ */
   text-align: left; /* จัดโลโก้ให้อยู่ทางซ้าย */
+  flex-grow: 1; /* ทำให้โลโก้ขยายเต็มความกว้างของ container */
 
   @media (max-width: 768px) {
     font-size: 1.5rem; /* ปรับขนาดฟอนต์เมื่อหน้าจอเล็ก */
@@ -30,10 +29,10 @@ const ButtonContainer = styled.div`
   display: flex;
   gap: 15px;
   align-items: center;
+  justify-content: flex-end; /* ปุ่มอยู่ขวาสุด */
 
   @media (max-width: 768px) {
     gap: 10px; /* ลดระยะห่างระหว่างปุ่มในหน้าจอเล็ก */
-    margin-left: auto; /* ทำให้ปุ่มอยู่ทางขวา */
   }
 `;
 

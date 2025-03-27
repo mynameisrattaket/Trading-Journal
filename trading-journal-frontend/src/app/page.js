@@ -136,9 +136,18 @@ const ThemeToggle = styled.button.withConfig({
   padding: 2px;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.3s ease;
+  outline: none; /* ลบขอบรอบปุ่ม */
+  box-shadow: none; /* ลบเงารอบปุ่ม */
+
+  &:focus {
+    outline: none; /* ลบขอบเมื่อมี focus */
+    box-shadow: none; /* ลบเงาเมื่อมี focus */
+  }
 
   &:active {
     transform: scale(0.95);
+    outline: none; /* ลบขอบเมื่อคลิก */
+    box-shadow: none; /* ลบเงาเมื่อคลิก */
   }
 
   & .toggle-circle {
@@ -163,6 +172,7 @@ const ThemeToggle = styled.button.withConfig({
   }
 `;
 
+
 const LanguageToggle = styled.button`
   shouldForwardProp: (prop) => prop !== 'language';
   background-image: ${(props) => 
@@ -181,9 +191,18 @@ const LanguageToggle = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: transform 0.2s ease;
+  outline: none; /* ลบขอบรอบปุ่ม */
+  box-shadow: none; /* ลบเงารอบปุ่ม */
+
+  &:focus {
+    outline: none; /* ลบขอบเมื่อมี focus */
+    box-shadow: none; /* ลบเงาเมื่อมี focus */
+  }
 
   &:active {
     transform: scale(0.9);
+    outline: none; /* ลบขอบเมื่อคลิก */
+    box-shadow: none; /* ลบเงาเมื่อคลิก */
   }
 `;
 

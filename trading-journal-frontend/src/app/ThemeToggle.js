@@ -15,9 +15,18 @@ const ThemeToggleWrapper = styled.button.withConfig({
   padding: 2px;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.3s ease;
+  outline: none; /* ลบขอบ */
+  box-shadow: none; /* ลบเงารอบๆ */
+  
+  &:focus {
+    outline: none; /* ลบขอบเมื่อ focus */
+    box-shadow: none; /* ลบเงาเมื่อ focus */
+  }
 
   &:active {
     transform: scale(0.95);
+    outline: none; /* ลบขอบเมื่อคลิก */
+    box-shadow: none; /* ลบเงาเมื่อคลิก */
   }
 
   & .toggle-circle {
@@ -41,6 +50,8 @@ const ThemeToggleWrapper = styled.button.withConfig({
     right: ${(props) => (props.isDark ? "auto" : "5px")};
   }
 `;
+
+
 
 const ThemeToggle = ({ isDark, toggleTheme }) => {
   return (

@@ -80,20 +80,46 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 40px 20px;
+
+  @media (max-width: 768px) {
+    padding: 20px 10px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 15px 5px;
+  }
 `;
 
 const NavBar = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
   max-width: 1200px;
   padding: 20px;
-  align-items: center;
+  margin: 0 auto; /* จัดตำแหน่งกลาง */
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    padding: 15px;
+  }
 `;
 
 const Logo = styled.div`
   font-size: 2rem;
   font-weight: bold;
+  cursor: pointer;
+  flex-grow: 1; /* ทำให้ Logo ขยายเต็มพื้นที่ */
+  text-align: left; /* จัดโลโก้ให้อยู่ทางซ้าย */
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem; /* ปรับขนาดฟอนต์เมื่อหน้าจอเล็ก */
+  }
 `;
 
 const ThemeToggle = styled.button.withConfig({
@@ -171,6 +197,14 @@ const Header = styled.h1`
   span {
     color: ${(props) => props.theme.buttonBg};
   }
+
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
+  }
 `;
 
 const SubHeader = styled.h2`
@@ -179,6 +213,10 @@ const SubHeader = styled.h2`
   color: ${(props) => props.theme.subText};
   text-align: center;
   max-width: 800px;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const Button = styled.button`
@@ -193,11 +231,24 @@ const Button = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 160px; /* กำหนดความกว้างของปุ่มเพื่อให้ไม่ขยับ */
-  
+  min-width: 160px;
+  padding: 12px 25px;
+
   &:hover {
     background: ${(props) => props.theme.buttonHover};
     transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    min-width: 120px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+    padding: 8px 15px;
+    min-width: 100%;
   }
 `;
 
@@ -232,8 +283,11 @@ const FeatureGrid = styled.div`
   margin-top: 40px;
   width: 100%;
   max-width: 1000px;
-`;
 
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
 const FeatureCard = styled.div`
   background: ${(props) => props.theme.cardBg};
   padding: 20px;
@@ -241,6 +295,7 @@ const FeatureCard = styled.div`
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
+
 
 // เพิ่มการตรวจสอบใน useState เพื่ออ่านค่า theme จาก localStorage
 const Home = () => {
@@ -269,7 +324,11 @@ const Home = () => {
   };
 
   const currentLocale = locales && locales[language] ? locales[language] : locales?.en || {};
-  
+  const [menuOpen, setMenuOpen] = useState(false);
+
+const toggleMenu = () => {
+  setMenuOpen(!menuOpen);
+};
   return (
     <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
       <GlobalStyle />

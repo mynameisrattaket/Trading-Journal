@@ -116,10 +116,6 @@ const Logo = styled.div`
   cursor: pointer;
   flex-grow: 1; /* ทำให้ Logo ขยายเต็มพื้นที่ */
   text-align: left; /* จัดโลโก้ให้อยู่ทางซ้าย */
-
-  @media (max-width: 768px) {
-    font-size: 1.5rem; /* ปรับขนาดฟอนต์เมื่อหน้าจอเล็ก */
-  }
 `;
 
 const ThemeToggle = styled.button.withConfig({

@@ -24,7 +24,7 @@
     "firebase-admin": "^13.1.0",
     "mime": "^4.0.6",
     "moment-timezone": "^0.5.47",
-    "mysql2": "^3.13.0",
+    "mysql2": "^3.14.0",
     "node-cron": "^3.0.3"
   }
 }

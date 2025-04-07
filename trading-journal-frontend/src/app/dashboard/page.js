@@ -113,6 +113,36 @@ const TableRow = styled.tr`
   }
 `;
 
+const Wrapper = styled.div`
+  display: flex;
+`;
+
+const ContentWrapper = styled.div`
+  margin-top: 80px;       // เว้นให้ Navbar
+  margin-left: 240px;     // เว้นให้ Sidebar
+  padding: 20px;
+  width: calc(100% - 240px);
+  overflow-x: auto;
+`;
+
+const FixedNavBar = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+`;
+
+const FixedSidebar = styled.div`
+  position: fixed;
+  top: 80px;             // อยู่ใต้ Navbar
+  left: 0;
+  width: 240px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  z-index: 998;
+`;
+
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const { language, toggleLanguage, locales } = useLanguage();
@@ -170,59 +200,65 @@ const Dashboard = () => {
   return (
     <ThemeProvider theme={theme === 'dark' ? darkTheme : lightTheme}>
       <GlobalStyle />
-      <NavBar 
-        theme={theme} 
-        toggleTheme={toggleTheme} 
-        language={language} 
-        toggleLanguage={toggleLanguage} 
-      />
-      <Container>
-        <SidebarComponent handleNavigation={handleNavigation} />
-        <Table>
-          <thead>
-            <tr>
-              <TableHeader>ID</TableHeader>
-              <TableHeader>User ID</TableHeader>
-              <TableHeader>Symbol</TableHeader>
-              <TableHeader>Trade Type</TableHeader>
-              <TableHeader>Entry Price</TableHeader>
-              <TableHeader>Exit Price</TableHeader>
-              <TableHeader>Quantity</TableHeader>
-              <TableHeader>Stop Loss</TableHeader>
-              <TableHeader>Take Profit</TableHeader>
-              <TableHeader>Status</TableHeader>
-              <TableHeader>Created At</TableHeader>
-              <TableHeader>Closed At</TableHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {trades.length > 0 ? (
-              trades.map((trade) => (
-                <TableRow key={trade.id}>
-                  <TableCell>{trade.id}</TableCell>
-                  <TableCell>{trade.user_id}</TableCell>
-                  <TableCell>{trade.symbol}</TableCell>
-                  <TableCell>{trade.trade_type}</TableCell>
-                  <TableCell>{trade.entry_price}</TableCell>
-                  <TableCell>{trade.exit_price}</TableCell>
-                  <TableCell>{trade.quantity}</TableCell>
-                  <TableCell>{trade.stop_loss}</TableCell>
-                  <TableCell>{trade.take_profit}</TableCell>
-                  <TableCell>{trade.status}</TableCell>
-                  <TableCell>{formatDateTime(trade.created_at)}</TableCell>
-                  <TableCell>{formatDateTime(trade.closed_at)}</TableCell>
-                </TableRow>
-              ))
-            ) : (
+      <FixedNavBar>
+        <NavBar 
+          theme={theme} 
+          toggleTheme={toggleTheme} 
+          language={language} 
+          toggleLanguage={toggleLanguage} 
+        />
+      </FixedNavBar>
+      <Wrapper>
+        <FixedSidebar>
+          <SidebarComponent handleNavigation={handleNavigation} />
+        </FixedSidebar>
+        <ContentWrapper>
+          <Table>
+            <thead>
               <tr>
-                <TableCell colSpan="12">No trades found</TableCell>
+                <TableHeader>ID</TableHeader>
+                <TableHeader>User ID</TableHeader>
+                <TableHeader>Symbol</TableHeader>
+                <TableHeader>Trade Type</TableHeader>
+                <TableHeader>Entry Price</TableHeader>
+                <TableHeader>Exit Price</TableHeader>
+                <TableHeader>Quantity</TableHeader>
+                <TableHeader>Stop Loss</TableHeader>
+                <TableHeader>Take Profit</TableHeader>
+                <TableHeader>Status</TableHeader>
+                <TableHeader>Created At</TableHeader>
+                <TableHeader>Closed At</TableHeader>
               </tr>
-            )}
-          </tbody>
-        </Table>
-      </Container>
+            </thead>
+            <tbody>
+              {trades.length > 0 ? (
+                trades.map((trade) => (
+                  <TableRow key={trade.id}>
+                    <TableCell>{trade.id}</TableCell>
+                    <TableCell>{trade.user_id}</TableCell>
+                    <TableCell>{trade.symbol}</TableCell>
+                    <TableCell>{trade.trade_type}</TableCell>
+                    <TableCell>{trade.entry_price}</TableCell>
+                    <TableCell>{trade.exit_price}</TableCell>
+                    <TableCell>{trade.quantity}</TableCell>
+                    <TableCell>{trade.stop_loss}</TableCell>
+                    <TableCell>{trade.take_profit}</TableCell>
+                    <TableCell>{trade.status}</TableCell>
+                    <TableCell>{formatDateTime(trade.created_at)}</TableCell>
+                    <TableCell>{formatDateTime(trade.closed_at)}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <tr>
+                  <TableCell colSpan="12">No trades found</TableCell>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </ContentWrapper>
+      </Wrapper>
     </ThemeProvider>
-  );
+  );  
 };
 
 export default Dashboard;

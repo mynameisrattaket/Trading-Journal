@@ -4,6 +4,7 @@ import { FaHome, FaChartBar } from 'react-icons/fa';
 import { AiOutlinePlus } from 'react-icons/ai'; // ใช้ไอคอน +
 import axios from 'axios';
 
+// Styled components for the sidebar
 const Sidebar = styled.div`
   position: fixed;
   top: 90px;
@@ -20,10 +21,8 @@ const Sidebar = styled.div`
 
 const SidebarButton = styled.button`
   background: ${(props) => props.theme.cardBg};
-  color: ${(props) =>
-    props.theme.cardBg === '#fff' ? '#333' : '#fff'}; /* ใช้เทาอ่อนแทนสีดำในธีมขาว */
-  border: 2px solid ${(props) =>
-    props.theme.cardBg === '#fff' ? '#ddd' : '#fff'}; /* กรอบที่บางลงในธีมขาว */
+  color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')};
+  border: 2px solid ${(props) => (props.theme.cardBg === '#fff' ? '#ddd' : '#fff')};
   padding: 10px 14px;
   border-radius: 8px;
   cursor: pointer;
@@ -48,8 +47,7 @@ const SidebarButton = styled.button`
 
   svg {
     font-size: 18px;
-    color: ${(props) =>
-      props.theme.cardBg === '#fff' ? '#333' : '#fff'}; /* ไอคอนที่สีเทาในธีมขาว */
+    color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')};
     transition: transform 0.3s;
   }
 
@@ -73,8 +71,8 @@ const ExchangeRate = styled.div`
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #ccc;
-    background: ${(props) => props.theme.cardBg}; /* ใช้พื้นหลังตามธีม */
-    color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')}; /* ปรับสีข้อความ */
+    background: ${(props) => props.theme.cardBg};
+    color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')};
   }
 
   select {
@@ -85,10 +83,65 @@ const ExchangeRate = styled.div`
     margin-top: 10px;
     font-size: 16px;
     font-weight: 600;
-    color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')}; /* เปลี่ยนสีตามธีม */
-    transition: all 0.3s ease-in-out; /* เพิ่ม transition นุ่มๆ */
+    color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')};
+    transition: all 0.3s ease-in-out;
   }
+`;
 
+// Modal Component for New Trade Form
+const ModalBackground = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContainer = styled.div`
+  background: ${(props) => props.theme.cardBg};
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+`;
+
+const ModalHeader = styled.h2`
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')};
+`;
+
+const InputField = styled.input`
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background: ${(props) => props.theme.cardBg};
+  color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')};
+`;
+
+const SelectField = styled.select`
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background: ${(props) => props.theme.cardBg};
+  color: ${(props) => (props.theme.cardBg === '#fff' ? '#333' : '#fff')};
+`;
+
+const ModalFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 `;
 
 const SidebarComponent = ({ handleNavigation }) => {
@@ -96,10 +149,20 @@ const SidebarComponent = ({ handleNavigation }) => {
   const [amountUSD, setAmountUSD] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('THB');
   const [convertedAmount, setConvertedAmount] = useState(null);
+  const [showModal, setShowModal] = useState(false); // State to handle modal visibility
+  const [tradeDetails, setTradeDetails] = useState({
+    symbol: '',
+    tradeType: 'BUY',
+    entryPrice: '',
+    exitPrice: '',
+    quantity: '',
+    stopLoss: '',
+    takeProfit: '',
+  });
 
-  // ดึงข้อมูลอัตราแลกเปลี่ยนจาก API
+  // Fetch exchange rates
   useEffect(() => {
-    axios.get('http://localhost:3001/exchange-rates')  // ตั้งค่าให้ตรงกับ backend
+    axios.get('http://localhost:3001/exchange-rates')
       .then((response) => {
         setExchangeRates(response.data);
       })
@@ -108,15 +171,28 @@ const SidebarComponent = ({ handleNavigation }) => {
       });
   }, []);
 
-  // คำนวณอัตราแลกเปลี่ยนเมื่อจำนวนเงินหรือสกุลเงินที่เลือกเปลี่ยน
+  // Calculate conversion when amount or currency changes
   useEffect(() => {
     if (amountUSD && selectedCurrency) {
       const rate = exchangeRates.find(rate => rate.currency === selectedCurrency);
       if (rate) {
-        setConvertedAmount(amountUSD * rate.rate_to_usd); // คำนวณจาก USD เป็นสกุลเงินที่เลือก
+        setConvertedAmount(amountUSD * rate.rate_to_usd);
       }
     }
   }, [amountUSD, selectedCurrency, exchangeRates]);
+
+  // Handle new trade form input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setTradeDetails({ ...tradeDetails, [name]: value });
+  };
+
+  // Handle form submission for new trade
+  const handleTradeSubmit = () => {
+    console.log('Trade details:', tradeDetails);
+    // Add logic to handle trade submission (e.g., send to API)
+    setShowModal(false); // Close modal after submission
+  };
 
   return (
     <Sidebar>
@@ -144,8 +220,8 @@ const SidebarComponent = ({ handleNavigation }) => {
         )}
       </ExchangeRate>
 
-      <SidebarButton onClick={() => handleNavigation('')}>
-        <AiOutlinePlus /> {/* เปลี่ยนเป็นเครื่องหมาย + */}
+      <SidebarButton onClick={() => setShowModal(true)}>
+        <AiOutlinePlus />
         New Trade
       </SidebarButton>
       <SidebarButton onClick={() => handleNavigation('/dashboard')}>
@@ -156,6 +232,73 @@ const SidebarComponent = ({ handleNavigation }) => {
         <FaChartBar />
         Stats
       </SidebarButton>
+
+      {/* Modal for New Trade */}
+      {showModal && (
+        <ModalBackground>
+          <ModalContainer>
+            <ModalHeader>New Trade</ModalHeader>
+            <form onSubmit={handleTradeSubmit}>
+              <InputField
+                type="text"
+                name="symbol"
+                value={tradeDetails.symbol}
+                onChange={handleInputChange}
+                placeholder="Symbol (e.g., AAPL)"
+              />
+              <SelectField
+                name="tradeType"
+                value={tradeDetails.tradeType}
+                onChange={handleInputChange}
+              >
+                <option value="BUY">BUY</option>
+                <option value="SELL">SELL</option>
+              </SelectField>
+              <InputField
+                type="number"
+                name="entryPrice"
+                value={tradeDetails.entryPrice}
+                onChange={handleInputChange}
+                placeholder="Entry Price"
+              />
+              <InputField
+                type="number"
+                name="exitPrice"
+                value={tradeDetails.exitPrice}
+                onChange={handleInputChange}
+                placeholder="Exit Price"
+              />
+              <InputField
+                type="number"
+                name="quantity"
+                value={tradeDetails.quantity}
+                onChange={handleInputChange}
+                placeholder="Quantity"
+              />
+              <InputField
+                type="number"
+                name="stopLoss"
+                value={tradeDetails.stopLoss}
+                onChange={handleInputChange}
+                placeholder="Stop Loss"
+              />
+              <InputField
+                type="number"
+                name="takeProfit"
+                value={tradeDetails.takeProfit}
+                onChange={handleInputChange}
+                placeholder="Take Profit"
+              />
+              <ModalFooter>
+                <button type="button" onClick={() => setShowModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit">Submit</button>
+              </ModalFooter>
+            </form>
+          </ModalContainer>
+        </ModalBackground>
+      )}
     </Sidebar>
   );
 };

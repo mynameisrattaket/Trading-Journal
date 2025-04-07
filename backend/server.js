@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2/promise'); // ✅ ใช้ promise-based
+const { Pool } = require('pg'); // ใช้ pg สำหรับ PostgreSQL
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const { auth } = require("./firebase-admin"); 
@@ -21,38 +21,35 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],
 }));
 
-
 app.use(express.json());
 
-// ✅ ใช้ connection pool เพื่อรองรับหลาย request พร้อมกัน
-const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  port: process.env.MYSQL_PORT,
-  waitForConnections: true,
-  connectionLimit: 10, // ✅ กำหนด max connection
-  queueLimit: 0,
+// ใช้ connection pool สำหรับ PostgreSQL
+const pool = new Pool({
+  host: process.env.PGHOST, // ใช้ environment variable สำหรับ host
+  user: process.env.PGUSER, // user ที่ใช้ในการเชื่อมต่อ
+  password: process.env.PGPASSWORD, // รหัสผ่าน
+  database: process.env.PGDATABASE, // ชื่อฐานข้อมูล
+  port: process.env.PGPORT, // พอร์ตที่ใช้เชื่อมต่อ
 });
 
-// ✅ Test database connection
-pool.getConnection()
-  .then(conn => {
-    console.log('✅ Connected to the database');
-    conn.release();
+// ✅ Test PostgreSQL connection
+pool.connect()
+  .then(client => {
+    console.log('✅ Connected to the PostgreSQL database');
+    client.release(); // ปล่อย connection หลังจากเชื่อมต่อ
   })
   .catch(err => console.error('❌ Database connection error:', err));
 
-  app.get('/exchange-rates', async (req, res) => {
-    try {
-      const [results] = await pool.query('SELECT id, currency, rate_to_usd FROM exchange_rates');
-      res.json(results); // ส่งข้อมูลกลับไปยัง frontend
-    } catch (err) {
-      console.error('Error fetching exchange rates:', err);
-      res.status(500).send('Error fetching exchange rates');
-    }
-  });
+app.get('/exchange-rates', async (req, res) => {
+  try {
+    // ใช้ PostgreSQL query แทน MySQL query
+    const result = await pool.query('SELECT id, currency, rate_to_usd FROM exchange_rates');
+    res.json(result.rows); // ส่งข้อมูลกลับไปยัง frontend
+  } catch (err) {
+    console.error('Error fetching exchange rates:', err);
+    res.status(500).send('Error fetching exchange rates');
+  }
+});
 
 // ✅ ลงทะเบียน (Register)
 app.post("/register", async (req, res) => {
@@ -64,9 +61,9 @@ app.post("/register", async (req, res) => {
 
   try {
     // เช็คว่า user มีในฐานข้อมูลหรือยัง
-    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
-    if (rows.length > 0) {
+    if (result.rows.length > 0) {
       return res.status(400).json({ message: "Email is already in use." });
     }
 
@@ -74,7 +71,7 @@ app.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // เพิ่ม user ใหม่
-    await pool.query("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)", [username, email, hashedPassword]);
+    await pool.query("INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3)", [username, email, hashedPassword]);
 
     res.status(201).json({ message: "User registered successfully!" });
   } catch (err) {
@@ -93,13 +90,13 @@ app.post("/login", async (req, res) => {
 
   try {
     // ค้นหาผู้ใช้จากฐานข้อมูล
-    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const user = rows[0];
+    const user = result.rows[0];
 
     // ตรวจสอบรหัสผ่าน
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
@@ -127,27 +124,27 @@ app.post("/login/google", async (req, res) => {
     const decodedToken = await auth.verifyIdToken(idToken);
     const { uid, email, name } = decodedToken;
 
-    // ✅ ตรวจสอบว่าผู้ใช้มีใน MySQL หรือยัง
-    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    // ✅ ตรวจสอบว่าผู้ใช้มีใน PostgreSQL หรือยัง
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       // ✅ ถ้ายังไม่มี -> บันทึกลงฐานข้อมูล (ใช้ `uid` จาก Google เป็น `uid` ของผู้ใช้)
-      await pool.query("INSERT INTO users (username, email, uid) VALUES (?, ?, ?)", [
+      await pool.query("INSERT INTO users (username, email, uid) VALUES ($1, $2, $3)", [
         name,    // username
         email,   // email
         uid      // ใช้ `uid` จาก Google
       ]);
     } else {
       // ✅ ถ้ามีอยู่แล้ว -> อัปเดตข้อมูลของผู้ใช้ (อัปเดต `uid`)
-      await pool.query("UPDATE users SET uid = ? WHERE email = ?", [
+      await pool.query("UPDATE users SET uid = $1 WHERE email = $2", [
         uid,    // ใช้ `uid` จาก Google
         email   // ใช้ `email` เพื่อหาผู้ใช้
       ]);
     }
 
     // ✅ ดึงข้อมูลผู้ใช้
-    const [userRows] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
-    const user = userRows[0];
+    const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    const user = userResult.rows[0];
 
     res.status(200).json({
       message: "Login successful!",
@@ -167,22 +164,21 @@ app.post("/login/google", async (req, res) => {
 app.get('/api/trades', async (req, res) => {
   try {
     const query = `
-      SELECT \`id\`, \`user_id\`, \`symbol\`, \`trade_type\`, \`entry_price\`, 
-             \`exit_price\`, \`quantity\`, \`stop_loss\`, \`take_profit\`, 
-             \`status\`, \`created_at\`, \`closed_at\`
-      FROM \`trades\`;
+      SELECT "id", "user_id", "symbol", "trade_type", "entry_price", 
+             "exit_price", "quantity", "stop_loss", "take_profit", 
+             "status", "created_at", "closed_at"
+      FROM "trades";
     `;
     
     // Execute the query using async/await
-    const [results] = await pool.execute(query); // Executes the query and waits for the results
+    const result = await pool.query(query); // Executes the query and waits for the results
     
-    res.json(results); // Return the results as JSON
+    res.json(result.rows); // Return the results as JSON
   } catch (err) {
     console.error('Error executing query:', err);
     return res.status(500).json({ message: 'Error fetching data', error: err });
   }
 });
-
 
 // Start server
 app.listen(port, () => {

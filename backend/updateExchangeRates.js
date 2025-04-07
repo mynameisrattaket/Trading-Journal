@@ -1,30 +1,28 @@
-// C:\Users\NBODTKKU\Desktop\Trading-Journal\backend\updateExchangeRates.js
 require('dotenv').config();
 const axios = require('axios');
-const mysql = require('mysql2');
+const { Pool } = require('pg'); // ใช้ pg แทน mysql2
 const moment = require('moment-timezone');
 const cron = require('node-cron'); // เพิ่มการใช้ node-cron
 
 const API_KEY = '6cfead6482daf1cd969cd8e0'; // แทนที่ด้วย API key ของคุณ
 const url = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`;
 
-// ตั้งค่าการเชื่อมต่อฐานข้อมูล
-const db = mysql.createConnection({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  port: process.env.MYSQL_PORT,
+// ตั้งค่าการเชื่อมต่อ PostgreSQL
+const pool = new Pool({
+  host: process.env.PGHOST, // host ของ PostgreSQL
+  user: process.env.PGUSER, // user ของ PostgreSQL
+  password: process.env.PGPASSWORD, // รหัสผ่านของ PostgreSQL
+  database: process.env.PGDATABASE, // ชื่อฐานข้อมูล
+  port: process.env.PGPORT, // port ของ PostgreSQL
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error('Error connecting to database:', err);
-  } else {
-    console.log('Connected to database');
-  }
-});
-
+// เชื่อมต่อกับฐานข้อมูล
+pool.connect()
+  .then(client => {
+    console.log('✅ Connected to PostgreSQL database');
+    client.release();
+  })
+  .catch(err => console.error('❌ Error connecting to PostgreSQL database:', err));
 
 const currencies = ['THB', 'HKD', 'CNY', 'AUD', 'EUR', 'GBP', 'NZD', 'CAD', 'CHF', 'JPY'];
 
@@ -32,11 +30,11 @@ const currencies = ['THB', 'HKD', 'CNY', 'AUD', 'EUR', 'GBP', 'NZD', 'CAD', 'CHF
 const isTodayUpdated = () => {
   return new Promise((resolve, reject) => {
     const query = 'SELECT MAX(updated_at) AS last_update FROM exchange_rates';
-    db.query(query, (err, result) => {
+    pool.query(query, (err, result) => { // แก้ไข db.query เป็น pool.query
       if (err) {
         reject(err);
       } else {
-        const lastUpdate = result[0].last_update;
+        const lastUpdate = result.rows[0].last_update;
         const now = moment();
         // ถ้า last_update เป็นวันนี้หรือไม่เกิน 24 ชั่วโมงที่แล้ว ก็ไม่อัปเดตใหม่
         if (lastUpdate && moment(lastUpdate).isSame(now, 'day')) {
@@ -74,15 +72,16 @@ const updateExchangeRates = async () => {
           // ใช้ moment-timezone เพื่อแปลงเวลาเป็นเวลาประเทศไทย (ICT)
           const thaiTime = moment().tz("Asia/Bangkok").format('YYYY-MM-DD HH:mm:ss');
 
-          // คำสั่ง SQL สำหรับการอัปเดตข้อมูลในฐานข้อมูล
+          // คำสั่ง SQL สำหรับการอัปเดตข้อมูลในฐานข้อมูล (แก้ไขคำสั่ง SQL)
           const query = `
             INSERT INTO exchange_rates (currency, rate_to_usd, updated_at)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE rate_to_usd = ?, updated_at = ?;
+            VALUES ($1, $2, $3)
+            ON CONFLICT (currency) 
+            DO UPDATE SET rate_to_usd = $2, updated_at = $3;
           `;
 
           // อัปเดตข้อมูลในฐานข้อมูล
-          db.query(query, [currency, rate, thaiTime, rate, thaiTime], (err, result) => {
+          pool.query(query, [currency, rate, thaiTime], (err, result) => { // แก้ไข db.query เป็น pool.query
             if (err) {
               console.error(`Error updating ${currency}:`, err);
             } else {
